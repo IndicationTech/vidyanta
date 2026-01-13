@@ -1,0 +1,8 @@
+
+{
+  "name": "EduNexus AI School ERP",
+  "description": "A comprehensive AI-powered school management system featuring role-based dashboards, academic planning, finance tracking, and automated communication.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
