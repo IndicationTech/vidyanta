@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Mail, Phone, X } from "lucide-react";
 
 const Admissions = () => {
-  const [leads, setLeads] = useState < any > [];
+  const [leads, setLeads] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -65,7 +65,7 @@ const Admissions = () => {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700"
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 cursor-pointer"
         >
           <Plus size={20} />
           Add New Lead
@@ -77,7 +77,7 @@ const Admissions = () => {
         {["New", "Contacted", "Visit Scheduled", "Enrolled"].map((status) => (
           <div
             key={status}
-            className="bg-slate-100/50 p-4 rounded-2xl min-h-[500px]"
+            className="bg-slate-100/50 p-4 rounded-2xl min-h-125"
           >
             <h3 className="font-bold mb-4">{status}</h3>
 
@@ -111,7 +111,7 @@ const Admissions = () => {
             <div className="flex justify-between items-center">
               <h3 className="font-bold text-lg">Add New Lead</h3>
               <button type="button" onClick={() => setShowModal(false)}>
-                <X />
+                <X className="cursor-pointer text-gray-500"/>
               </button>
             </div>
 
@@ -119,7 +119,7 @@ const Admissions = () => {
               name="name"
               value={formData.name}
               placeholder="Student Name"
-              className="w-full border p-2 rounded"
+              className="w-full border p-2 rounded border-gray-300 outline-none"
               onChange={handleChange}
               required
             />
@@ -127,7 +127,7 @@ const Admissions = () => {
               name="email"
               value={formData.email}
               placeholder="Email"
-              className="w-full border p-2 rounded"
+              className="w-full border p-2 rounded border-gray-300 outline-none"
               onChange={handleChange}
               required
             />
@@ -135,7 +135,7 @@ const Admissions = () => {
               name="phone"
               value={formData.phone}
               placeholder="Phone"
-              className="w-full border p-2 rounded"
+              className="w-full border p-2 rounded border-gray-300 outline-none"
               onChange={handleChange}
               required
             />
@@ -143,7 +143,7 @@ const Admissions = () => {
               name="source"
               value={formData.source}
               placeholder="Source (Website, Walk-in)"
-              className="w-full border p-2 rounded"
+              className="w-full border p-2 rounded border-gray-300 outline-none"
               onChange={handleChange}
             />
 
@@ -152,10 +152,10 @@ const Admissions = () => {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full border p-2 rounded"
+              className="w-full border p-2 rounded border-gray-300 outline-none"
               required
             >
-              <option value="" disabled>
+              <option value="" className="text-gray-400" disabled>
                 Select Status
               </option>
               <option value="New">New</option>
@@ -166,7 +166,7 @@ const Admissions = () => {
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-2 rounded-xl"
+              className="w-full bg-indigo-600 text-white font-semibold cursor-pointer py-2 rounded-md hover:scale-102 transition-all"
             >
               Save Lead
             </button>

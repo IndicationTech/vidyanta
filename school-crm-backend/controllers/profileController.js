@@ -35,15 +35,6 @@ export const createProfile = async (req, res) => {
         ? teacherId || `TCH${Math.floor(1000 + Math.random() * 9000)}`
         : undefined;
 
-    console.log(`📝 Creating ${userRole} with data:`, {
-      email: email.toLowerCase(),
-      firstName,
-      lastName,
-      role: userRole,
-      teacherId: generatedTeacherId,
-      restFields: Object.keys(rest),
-    });
-
     const userData = {
       email: email.toLowerCase(),
       password, // Will be hashed by the User model's pre-save hook
@@ -63,19 +54,11 @@ export const createProfile = async (req, res) => {
     const user = new User(userData);
 
     const savedUser = await user.save();
-    console.log(`✅ ${userRole} created successfully:`, {
-      _id: savedUser._id,
-      teacherId: savedUser.teacherId,
-      name: savedUser.name,
-      email: savedUser.email,
-      role: savedUser.role,
-      phone: savedUser.phone,
-    });
     // Convert Mongoose document to plain object to avoid serialization issues
     const userObject = savedUser.toObject ? savedUser.toObject() : savedUser;
     // Don't send password back to client
     delete userObject.password;
-    console.log("📤 Sending response with fields:", Object.keys(userObject));
+
     return res.status(201).json(userObject);
   } catch (error) {
     console.error("❌ Error creating teacher:", error.message);
@@ -90,8 +73,6 @@ export const getAllStaff = async (req, res) => {
     const staff = await User.find({
       role: { $in: ["TEACHER", "PARENT", "ACCOUNTS_HR"] },
     }).select("-password");
-
-    console.log(`📋 Found ${staff.length} staff members`);
     res.json(staff);
   } catch (error) {
     console.error("❌ Error fetching staff:", error.message);
@@ -102,7 +83,6 @@ export const getAllStaff = async (req, res) => {
 export const getProfile = async (req, res) => {
   try {
     const id = req.params.id || (req.user && req.user.id);
-    console.log("🔍 Searching for profile with ID:", id);
 
     if (!id && req.path.includes("teacher/profile")) {
       return res.status(401).json({ message: "Not authenticated" });
@@ -110,41 +90,24 @@ export const getProfile = async (req, res) => {
 
     let user = null;
     if (id && mongoose.isValidObjectId(id)) {
-      console.log("  → Searching by MongoDB _id:", id);
       user = await User.findById(id);
-      console.log("  → Found by _id:", user ? "YES" : "NO");
     }
 
     if (!user && id) {
-      console.log("  → Searching by teacherId:", id);
       user = await User.findOne({ teacherId: id });
-      console.log("  → Found by teacherId:", user ? "YES" : "NO");
     }
 
     if (!user) {
-      console.log("❌ User not found for ID:", id);
       // List all users to debug
       const allUsers = await User.find({}).select("_id teacherId name email");
-      console.log("📋 All users in DB:", allUsers);
+
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log("✅ Profile found:", {
-      _id: user._id,
-      teacherId: user.teacherId,
-      name: user.name,
-      subject: user.subject,
-      qualification: user.qualification,
-      experience: user.experience,
-      dateOfJoining: user.dateOfJoining,
-      phone: user.phone,
-      address: user.address,
-      photo: user.photo ? user.photo.substring(0, 50) + "..." : "No photo",
-    });
     // Convert Mongoose document to plain object to avoid serialization issues
     const userObject = user.toObject ? user.toObject() : user;
     delete userObject.password; // Don't send password to client
-    console.log("📤 Returning profile with fields:", Object.keys(userObject));
+
     res.json(userObject);
   } catch (error) {
     console.error("❌ Error in getProfile:", error.message);
@@ -195,9 +158,6 @@ export const updateProfile = async (req, res) => {
 
 export const uploadPhoto = async (req, res) => {
   try {
-    console.log("📸 Upload photo request received for user:", req.params.id);
-    console.log("📸 File object:", req.file ? "Present" : "Missing");
-
     const user = await User.findById(req.params.id);
     if (!user) {
       console.error("❌ User not found:", req.params.id);
@@ -219,8 +179,6 @@ export const uploadPhoto = async (req, res) => {
         message: "Failed to process uploaded photo",
       });
     }
-
-    console.log("✅ Photo uploaded to local storage:", photoUrl);
     user.photo = photoUrl;
     const savedUser = await user.save();
 

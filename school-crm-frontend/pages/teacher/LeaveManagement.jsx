@@ -86,7 +86,7 @@ const LeaveManagement = () => {
 
   const handleApplyLeave = () => {
     // Handle leave application
-    console.log({ leaveType, startDate, endDate, reason });
+
     setShowApplyForm(false);
     setReason("");
     setStartDate("");
@@ -99,7 +99,9 @@ const LeaveManagement = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Leave Management</h2>
-          <p className="text-slate-500">Apply for leave and track your leave history</p>
+          <p className="text-slate-500">
+            Apply for leave and track your leave history
+          </p>
         </div>
         <button
           onClick={() => setShowApplyForm(!showApplyForm)}
@@ -113,9 +115,14 @@ const LeaveManagement = () => {
       {/* Leave Balance */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {Object.entries(leaveBalance).map(([type, balance]) => (
-          <div key={type} className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+          <div
+            key={type}
+            className="bg-white p-5 rounded-xl shadow-sm border border-slate-100"
+          >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-slate-900 capitalize">{type} Leave</h3>
+              <h3 className="font-bold text-slate-900 capitalize">
+                {type} Leave
+              </h3>
               <FileText className="text-indigo-600" size={24} />
             </div>
             <div className="space-y-2">
@@ -125,11 +132,15 @@ const LeaveManagement = () => {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">Used</span>
-                <span className="font-medium text-orange-600">{balance.used} days</span>
+                <span className="font-medium text-orange-600">
+                  {balance.used} days
+                </span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">Remaining</span>
-                <span className="font-bold text-green-600">{balance.remaining} days</span>
+                <span className="font-bold text-green-600">
+                  {balance.remaining} days
+                </span>
               </div>
               <div className="mt-3 bg-slate-200 rounded-full h-2 overflow-hidden">
                 <div
@@ -148,7 +159,9 @@ const LeaveManagement = () => {
           <h3 className="text-lg font-bold mb-4">Apply for Leave</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Leave Type</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Leave Type
+              </label>
               <div className="grid grid-cols-3 gap-3">
                 {leaveTypes.map((type) => (
                   <button
@@ -168,7 +181,9 @@ const LeaveManagement = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Start Date</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Start Date
+                </label>
                 <input
                   type="date"
                   value={startDate}
@@ -177,7 +192,9 @@ const LeaveManagement = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">End Date</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  End Date
+                </label>
                 <input
                   type="date"
                   value={endDate}
@@ -187,7 +204,9 @@ const LeaveManagement = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Reason</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Reason
+              </label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
@@ -221,14 +240,20 @@ const LeaveManagement = () => {
           {leaveHistory.map((leave) => (
             <div
               key={leave.id}
-              className={`p-4 rounded-xl border-2 ${getStatusColor(leave.status)}`}
+              className={`p-4 rounded-xl border-2 ${getStatusColor(
+                leave.status
+              )}`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h4 className="font-bold text-lg">{leave.type}</h4>
                   <p className="text-sm text-slate-600 mt-1">{leave.reason}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(leave.status)}`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                    leave.status
+                  )}`}
+                >
                   {leave.status === "approved" ? (
                     <span className="flex items-center gap-1">
                       <CheckCircle size={12} />
@@ -274,4 +299,3 @@ const LeaveManagement = () => {
 };
 
 export default LeaveManagement;
-

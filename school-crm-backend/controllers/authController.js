@@ -68,10 +68,10 @@ export const signup = async (req, res) => {
       status: "Active",
     });
 
-    console.log("💾 Attempting to save user:", email);
+   
     await user.save();
 
-    console.log(`✅ New user registered: ${email} with role: ${role}`);
+    
 
     res.status(201).json({
       success: true,
@@ -160,7 +160,7 @@ export const login = async (req, res) => {
       { expiresIn: "7d" } // Token valid for 7 days
     );
 
-    console.log(`✅ User logged in: ${email} (${user.role})`);
+
 
     res.json({
       success: true,
@@ -228,7 +228,7 @@ export const logout = async (req, res) => {
   try {
     // In JWT, logout is handled on client side by removing token
     // This endpoint is for consistency and future token blacklisting
-    console.log(`✅ User logged out: ${req.user.email}`);
+ 
 
     res.json({
       success: true,
@@ -289,8 +289,6 @@ export const changePassword = async (req, res) => {
     // Update password
     user.password = newPassword;
     await user.save();
-
-    console.log(`✅ Password changed for user: ${user.email}`);
 
     res.json({
       success: true,

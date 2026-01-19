@@ -63,9 +63,6 @@ export const getStudentById = async (req, res) => {
  */
 export const createStudent = async (req, res) => {
   try {
-    console.log("=== CREATE STUDENT REQUEST ===");
-    console.log("Request body:", req.body);
-
     const {
       name,
       email,
@@ -76,19 +73,8 @@ export const createStudent = async (req, res) => {
       parent,
     } = req.body;
 
-    console.log("Extracted data:", {
-      name,
-      email,
-      password: password ? "***" : undefined,
-      studentClass,
-      section,
-      roll,
-      parent,
-    });
-
     // Validate required fields
     if (!name || !studentClass || !password) {
-      console.log("Validation failed - missing required fields");
       return res.status(400).json({
         success: false,
         message: "Name, class, and password are required",
@@ -99,15 +85,12 @@ export const createStudent = async (req, res) => {
     if (email) {
       const existingStudent = await Student.findOne({ email });
       if (existingStudent) {
-        console.log("Email already exists:", email);
         return res.status(400).json({
           success: false,
           message: "A student with this email already exists",
         });
       }
     }
-
-    console.log("Creating student in database...");
     // Create student
     const student = await Student.create({
       name,
@@ -119,13 +102,9 @@ export const createStudent = async (req, res) => {
       parent,
       status: "Active",
     });
-
-    console.log("Student created successfully:", student._id);
-
     // Return student without password
     const studentData = await Student.findById(student._id).select("-password");
 
-    console.log("Sending success response");
     res.status(201).json({
       success: true,
       message: "Student created successfully",

@@ -24,8 +24,6 @@ const Login = ({ onLogin }) => {
         localStorage.setItem("userEmail", response.data.user.email);
         localStorage.setItem("userRole", response.data.user.role);
 
-        console.log("Login successful, token saved");
-
         // Call the onLogin callback to update app state
         onLogin(response.data.user.role);
       }

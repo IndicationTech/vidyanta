@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  ChevronDown,
 } from "lucide-react";
 
 const Students = () => {
@@ -78,9 +79,8 @@ const Students = () => {
   const handleAddStudent = async (e) => {
     e.preventDefault();
     try {
-      console.log("Form data being submitted:", formData);
       const response = await createStudent(formData);
-      console.log("Create student response:", response);
+
       if (response.success) {
         alert("Student created successfully!");
         await fetchStudents(); // Refresh the list
@@ -299,13 +299,13 @@ const Students = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
+          <button className="flex items-center gap-2 bg-white border border-slate-200 cursor-pointer px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
             <Download size={18} />
             <span>Export</span>
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
+            className="flex items-center gap-2 bg-indigo-600 cursor-pointer text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
           >
             <Plus size={18} />
             <span>Add Student</span>
@@ -329,35 +329,48 @@ const Students = () => {
           />
         </div>
         <div className="flex items-center gap-2">
-          <select
-            value={filterClass}
-            onChange={(e) => setFilterClass(e.target.value)}
-            className="px-4 py-2 rounded-xl border border-slate-200 focus:outline-none bg-slate-50/50 text-slate-600 text-sm"
-          >
-            <option value="">All Classes</option>
-            <option value="1">Class 1</option>
-            <option value="2">Class 2</option>
-            <option value="3">Class 3</option>
-            <option value="4">Class 4</option>
-            <option value="5">Class 5</option>
-            <option value="6">Class 6</option>
-            <option value="7">Class 7</option>
-            <option value="8">Class 8</option>
-            <option value="9">Class 9</option>
-            <option value="10">Class 10</option>
-            <option value="11">Class 11</option>
-            <option value="12">Class 12</option>
-          </select>
-          <select
-            value={filterSection}
-            onChange={(e) => setFilterSection(e.target.value)}
-            className="px-4 py-2 rounded-xl border border-slate-200 focus:outline-none bg-slate-50/50 text-slate-600 text-sm"
-          >
-            <option value="">All Sections</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-          </select>
+          <div className="relative">
+            <select
+              value={filterClass}
+              onChange={(e) => setFilterClass(e.target.value)}
+              className="px-2 py-2 pr-10 cursor-pointer rounded-xl border appearance-none border-slate-200 focus:outline-none bg-slate-50/50 text-slate-600 text-sm w-full"
+            >
+              <option value="">All Classes</option>
+              <option value="1">Class 1</option>
+              <option value="2">Class 2</option>
+              <option value="3">Class 3</option>
+              <option value="4">Class 4</option>
+              <option value="5">Class 5</option>
+              <option value="6">Class 6</option>
+              <option value="7">Class 7</option>
+              <option value="8">Class 8</option>
+              <option value="9">Class 9</option>
+              <option value="10">Class 10</option>
+              <option value="11">Class 11</option>
+              <option value="12">Class 12</option>
+            </select>
+
+            {/* Custom Down Arrow */}
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
+              <ChevronDown size={20} />
+            </span>
+          </div>
+
+          <div className="relative">
+            <select
+              value={filterSection}
+              onChange={(e) => setFilterSection(e.target.value)}
+              className="px-2 py-2 w-30 appearance-none rounded-xl border border-slate-200 focus:outline-none bg-slate-50/50 text-slate-600 text-sm"
+            >
+              <option value="">All Sections</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+            </select>
+            <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-slate-500">
+              <ChevronDown size={20} />
+            </span>
+          </div>
           {(searchQuery || filterClass || filterSection) && (
             <button
               onClick={() => {

@@ -148,7 +148,7 @@ const SchoolAdminDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+        <div className="bg-white p-8 rounded-4xl shadow-sm border border-slate-100">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-xl font-bold text-slate-900">
               Financial Growth
@@ -157,7 +157,7 @@ const SchoolAdminDashboard = () => {
               <option>Yearly View</option>
             </select>
           </div>
-          <div className="h-[300px]">
+          <div className="h-75">
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -208,7 +208,7 @@ const SchoolAdminDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+        <div className="bg-white p-8 rounded-4xl shadow-sm border border-slate-100">
           <h3 className="text-xl font-bold text-slate-900 mb-6">
             Recent Transactions
           </h3>
@@ -257,7 +257,7 @@ const SchoolAdminDashboard = () => {
 
       {/* AI Health Modal */}
       {showAIModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-100 p-4">
           <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
             <div className="bg-indigo-600 p-8 text-white relative">
               <div className="relative z-10 flex items-center gap-4">

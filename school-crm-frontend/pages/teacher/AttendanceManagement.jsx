@@ -25,9 +25,12 @@ import {
 } from "recharts";
 
 const AttendanceManagement = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [selectedClass, setSelectedClass] = useState("10th A");
-  const [viewMode, setViewMode] = useState<"daily" | "weekly" | "monthly">("daily");
+  const [viewMode, setViewMode] =
+    (useState < "daily") | "weekly" | ("monthly" > "daily");
 
   const attendanceData = [
     { name: "Present", value: 28, color: "#10b981" },
@@ -46,13 +49,14 @@ const AttendanceManagement = () => {
 
   const students = MOCK_STUDENTS.map((student) => ({
     ...student,
-    attendanceStatus: Math.random() > 0.7 ? "absent" : Math.random() > 0.9 ? "late" : "present",
+    attendanceStatus:
+      Math.random() > 0.7 ? "absent" : Math.random() > 0.9 ? "late" : "present",
   }));
 
-  const handleMarkAttendance = (studentId, status) => {
-    // Handle attendance marking
-    console.log(`Marking ${studentId} as ${status}`);
-  };
+  // const handleMarkAttendance = (studentId, status) => {
+  //   // Handle attendance marking
+  //   console.log(`Marking ${studentId} as ${status}`);
+  // };
 
   return (
     <div className="space-y-6">
@@ -90,7 +94,9 @@ const AttendanceManagement = () => {
         <button
           onClick={() => setViewMode("daily")}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            viewMode === "daily" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600"
+            viewMode === "daily"
+              ? "bg-white text-indigo-600 shadow-sm"
+              : "text-slate-600"
           }`}
         >
           Daily
@@ -98,7 +104,9 @@ const AttendanceManagement = () => {
         <button
           onClick={() => setViewMode("weekly")}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            viewMode === "weekly" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600"
+            viewMode === "weekly"
+              ? "bg-white text-indigo-600 shadow-sm"
+              : "text-slate-600"
           }`}
         >
           Weekly
@@ -106,7 +114,9 @@ const AttendanceManagement = () => {
         <button
           onClick={() => setViewMode("monthly")}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            viewMode === "monthly" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-600"
+            viewMode === "monthly"
+              ? "bg-white text-indigo-600 shadow-sm"
+              : "text-slate-600"
           }`}
         >
           Monthly
@@ -148,16 +158,25 @@ const AttendanceManagement = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Attendance Chart */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold mb-4">Today's Attendance Overview</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <h3 className="text-lg font-bold mb-4">
+            Today's Attendance Overview
+          </h3>
+          <div className="h-75">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={0}
+              minHeight={0}
+            >
               <PieChart>
                 <Pie
                   data={attendanceData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
@@ -176,12 +195,30 @@ const AttendanceManagement = () => {
         {/* Weekly Trend */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
           <h3 className="text-lg font-bold mb-4">Weekly Attendance Trend</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <div className="h-75">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={0}
+              minHeight={0}
+            >
               <BarChart data={weeklyData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8" }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8" }} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#f1f5f9"
+                />
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8" }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8" }}
+                />
                 <Tooltip />
                 <Bar dataKey="present" fill="#10b981" radius={[8, 8, 0, 0]} />
                 <Bar dataKey="absent" fill="#ef4444" radius={[8, 8, 0, 0]} />
@@ -194,20 +231,33 @@ const AttendanceManagement = () => {
 
       {/* Student Attendance List */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-        <h3 className="text-lg font-bold mb-4">Mark Attendance - {selectedClass}</h3>
+        <h3 className="text-lg font-bold mb-4">
+          Mark Attendance - {selectedClass}
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Roll No</th>
-                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">Name</th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">Status</th>
-                <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">Actions</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
+                  Roll No
+                </th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600">
+                  Name
+                </th>
+                <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">
+                  Status
+                </th>
+                <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {students.map((student, index) => (
-                <tr key={student.id} className="border-b border-slate-100 hover:bg-slate-50">
+                <tr
+                  key={student.id}
+                  className="border-b border-slate-100 hover:bg-slate-50"
+                >
                   <td className="py-3 px-4 text-sm font-medium">{index + 1}</td>
                   <td className="py-3 px-4 text-sm">{student.name}</td>
                   <td className="py-3 px-4">
@@ -227,19 +277,24 @@ const AttendanceManagement = () => {
                       ) : (
                         <XCircle size={12} />
                       )}
-                      {student.attendanceStatus.charAt(0).toUpperCase() + student.attendanceStatus.slice(1)}
+                      {student.attendanceStatus.charAt(0).toUpperCase() +
+                        student.attendanceStatus.slice(1)}
                     </span>
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center justify-center gap-2">
                       <button
-                        onClick={() => handleMarkAttendance(student.id, "present")}
+                        onClick={() =>
+                          handleMarkAttendance(student.id, "present")
+                        }
                         className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200 transition-colors"
                       >
                         Present
                       </button>
                       <button
-                        onClick={() => handleMarkAttendance(student.id, "absent")}
+                        onClick={() =>
+                          handleMarkAttendance(student.id, "absent")
+                        }
                         className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors"
                       >
                         Absent
@@ -259,7 +314,10 @@ const AttendanceManagement = () => {
         </div>
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            Total: {students.length} students | Present: {students.filter((s) => s.attendanceStatus === "present").length} | Absent: {students.filter((s) => s.attendanceStatus === "absent").length}
+            Total: {students.length} students | Present:{" "}
+            {students.filter((s) => s.attendanceStatus === "present").length} |
+            Absent:{" "}
+            {students.filter((s) => s.attendanceStatus === "absent").length}
           </p>
           <button className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
             Save Attendance
@@ -271,4 +329,3 @@ const AttendanceManagement = () => {
 };
 
 export default AttendanceManagement;
-

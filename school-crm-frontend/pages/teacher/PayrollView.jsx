@@ -32,15 +32,35 @@ const PayrollView = () => {
   };
 
   const payslipHistory = [
-    { month: "February 2024", amount: 56100, status: "Paid", date: "2024-02-28" },
-    { month: "January 2024", amount: 56100, status: "Paid", date: "2024-01-28" },
-    { month: "December 2023", amount: 56100, status: "Paid", date: "2023-12-28" },
-    { month: "November 2023", amount: 56100, status: "Paid", date: "2023-11-28" },
+    {
+      month: "February 2024",
+      amount: 56100,
+      status: "Paid",
+      date: "2024-02-28",
+    },
+    {
+      month: "January 2024",
+      amount: 56100,
+      status: "Paid",
+      date: "2024-01-28",
+    },
+    {
+      month: "December 2023",
+      amount: 56100,
+      status: "Paid",
+      date: "2023-12-28",
+    },
+    {
+      month: "November 2023",
+      amount: 56100,
+      status: "Paid",
+      date: "2023-11-28",
+    },
   ];
 
-  const handleDownloadPayslip = (month) => {
-    console.log(`Downloading payslip for ${month}`);
-  };
+  // const handleDownloadPayslip = (month) => {
+  //   console.log(`Downloading payslip for ${month}`);
+  // };
 
   const maskAccountNumber = (account) => {
     return account.replace(/\d(?=\d{4})/g, "*");
@@ -52,7 +72,9 @@ const PayrollView = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Payroll Information</h2>
-          <p className="text-slate-500">View your salary details and download payslips (Read-Only)</p>
+          <p className="text-slate-500">
+            View your salary details and download payslips (Read-Only)
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <input
@@ -69,12 +91,18 @@ const PayrollView = () => {
       </div>
 
       {/* Salary Overview */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white">
+      <div className="bg-linear-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-indigo-100 text-sm mb-2">Net Salary (March 2024)</p>
-            <h3 className="text-4xl font-bold">₹{payrollData.netSalary.toLocaleString()}</h3>
-            <p className="text-indigo-100 text-sm mt-2">Contract Type: {payrollData.contractType}</p>
+            <p className="text-indigo-100 text-sm mb-2">
+              Net Salary (March 2024)
+            </p>
+            <h3 className="text-4xl font-bold">
+              ₹{payrollData.netSalary.toLocaleString()}
+            </h3>
+            <p className="text-indigo-100 text-sm mt-2">
+              Contract Type: {payrollData.contractType}
+            </p>
           </div>
           <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
             <DollarSign size={48} className="opacity-80" />
@@ -89,38 +117,66 @@ const PayrollView = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
               <span className="text-slate-700 font-medium">Basic Salary</span>
-              <span className="font-bold text-green-600">₹{payrollData.basicSalary.toLocaleString()}</span>
+              <span className="font-bold text-green-600">
+                ₹{payrollData.basicSalary.toLocaleString()}
+              </span>
             </div>
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
               <span className="text-slate-700 font-medium">HRA</span>
-              <span className="font-bold text-blue-600">₹{payrollData.hra.toLocaleString()}</span>
+              <span className="font-bold text-blue-600">
+                ₹{payrollData.hra.toLocaleString()}
+              </span>
             </div>
             <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <span className="text-slate-700 font-medium">Medical Allowance</span>
-              <span className="font-bold text-purple-600">₹{payrollData.medicalAllowance.toLocaleString()}</span>
+              <span className="text-slate-700 font-medium">
+                Medical Allowance
+              </span>
+              <span className="font-bold text-purple-600">
+                ₹{payrollData.medicalAllowance.toLocaleString()}
+              </span>
             </div>
             <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-              <span className="text-slate-700 font-medium">Transport Allowance</span>
-              <span className="font-bold text-orange-600">₹{payrollData.transportAllowance.toLocaleString()}</span>
+              <span className="text-slate-700 font-medium">
+                Transport Allowance
+              </span>
+              <span className="font-bold text-orange-600">
+                ₹{payrollData.transportAllowance.toLocaleString()}
+              </span>
             </div>
             <div className="border-t border-slate-200 pt-4 mt-4">
               <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg mb-2">
                 <span className="text-slate-700 font-medium">Gross Salary</span>
                 <span className="font-bold text-slate-900">
-                  ₹{(payrollData.basicSalary + payrollData.hra + payrollData.medicalAllowance + payrollData.transportAllowance).toLocaleString()}
+                  ₹
+                  {(
+                    payrollData.basicSalary +
+                    payrollData.hra +
+                    payrollData.medicalAllowance +
+                    payrollData.transportAllowance
+                  ).toLocaleString()}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg mb-2">
                 <span className="text-slate-700 font-medium">PF Deduction</span>
-                <span className="font-bold text-red-600">-₹{payrollData.pf.toLocaleString()}</span>
+                <span className="font-bold text-red-600">
+                  -₹{payrollData.pf.toLocaleString()}
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg mb-2">
-                <span className="text-slate-700 font-medium">Tax Deduction</span>
-                <span className="font-bold text-red-600">-₹{payrollData.tax.toLocaleString()}</span>
+                <span className="text-slate-700 font-medium">
+                  Tax Deduction
+                </span>
+                <span className="font-bold text-red-600">
+                  -₹{payrollData.tax.toLocaleString()}
+                </span>
               </div>
               <div className="flex items-center justify-between p-4 bg-indigo-50 rounded-lg mt-4">
-                <span className="text-slate-900 font-bold text-lg">Net Salary</span>
-                <span className="font-bold text-indigo-600 text-lg">₹{payrollData.netSalary.toLocaleString()}</span>
+                <span className="text-slate-900 font-bold text-lg">
+                  Net Salary
+                </span>
+                <span className="font-bold text-indigo-600 text-lg">
+                  ₹{payrollData.netSalary.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
@@ -172,7 +228,9 @@ const PayrollView = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600">Account Number</span>
-                    <span className="font-medium">{payrollData.bankAccount}</span>
+                    <span className="font-medium">
+                      {payrollData.bankAccount}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600">IFSC Code</span>
@@ -187,7 +245,9 @@ const PayrollView = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600">Account Number</span>
-                    <span className="font-medium">{maskAccountNumber(payrollData.bankAccount)}</span>
+                    <span className="font-medium">
+                      {maskAccountNumber(payrollData.bankAccount)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600">IFSC Code</span>
@@ -219,12 +279,16 @@ const PayrollView = () => {
                 </div>
                 <div>
                   <p className="font-semibold">{payslip.month}</p>
-                  <p className="text-sm text-slate-500">Paid on {payslip.date}</p>
+                  <p className="text-sm text-slate-500">
+                    Paid on {payslip.date}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="font-bold text-lg">₹{payslip.amount.toLocaleString()}</p>
+                  <p className="font-bold text-lg">
+                    ₹{payslip.amount.toLocaleString()}
+                  </p>
                   <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
                     {payslip.status}
                   </span>
@@ -246,4 +310,3 @@ const PayrollView = () => {
 };
 
 export default PayrollView;
-

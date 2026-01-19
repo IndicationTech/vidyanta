@@ -46,7 +46,7 @@ const SuperAdminSidebar = ({ activeTab, setActiveTab }) => {
           className="h-42 w-auto"
         />
 
-        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+        <p className="text-slate-500 text-lg ml-6 font-bold uppercase tracking-widest">
           Super Admin
         </p>
       </div>

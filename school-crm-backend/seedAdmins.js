@@ -11,7 +11,6 @@ const seedAdmins = async () => {
   try {
     // Connect to MongoDB
     await mongoose.connect(MONGODB_URI);
-    console.log("📦 Connected to MongoDB");
 
     // Check if admins already exist
     const superAdminExists = await User.findOne({
@@ -22,9 +21,6 @@ const seedAdmins = async () => {
     });
 
     if (superAdminExists && schoolAdminExists) {
-      console.log("✅ Default admin accounts already exist!");
-      console.log("   - Super Admin: admin@gmail.com");
-      console.log("   - School Admin: schooladmin@gmail.com");
       process.exit(0);
     }
 
@@ -40,9 +36,6 @@ const seedAdmins = async () => {
         status: "Active",
       });
       await superAdmin.save();
-      console.log("✅ Super Admin created:");
-      console.log("   Email: admin@gmail.com");
-      console.log("   Password: password123");
     } else {
       console.log("⚠️  Super Admin already exists");
     }
@@ -59,17 +52,9 @@ const seedAdmins = async () => {
         status: "Active",
       });
       await schoolAdmin.save();
-      console.log("✅ School Admin created:");
-      console.log("   Email: schooladmin@gmail.com");
-      console.log("   Password: password123");
     } else {
       console.log("⚠️  School Admin already exists");
     }
-
-    console.log("\n🎉 Admin seeding completed successfully!");
-    console.log("\nYou can now login with:");
-    console.log("1. Super Admin: admin@gmail.com / password123");
-    console.log("2. School Admin: schooladmin@gmail.com / password123");
 
     process.exit(0);
   } catch (error) {

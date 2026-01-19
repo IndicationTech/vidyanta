@@ -20,6 +20,7 @@ import {
   Trash2,
   Edit,
   CheckCircle2,
+  CircleX,
 } from "lucide-react";
 
 const Staff = () => {
@@ -130,12 +131,6 @@ const Staff = () => {
       if (typeof window !== "undefined") {
         localStorage.setItem("teacherProfileId", saved._id || "");
         localStorage.setItem("teacherProfileCode", saved.teacherId || "");
-        console.log(
-          "Teacher saved with ID:",
-          saved._id,
-          "teacherId:",
-          saved.teacherId
-        );
       }
 
       const newTeacher = {
@@ -219,7 +214,6 @@ const Staff = () => {
     const file = e.target.files[0];
     if (file) {
       setUploadedFile(file);
-      console.log("File uploaded:", file.name);
     }
   };
 
@@ -227,7 +221,6 @@ const Staff = () => {
     const file = e.target.files[0];
     if (file) {
       setTeacherUploadedFile(file);
-      console.log("Teacher file uploaded:", file.name);
     }
   };
 
@@ -333,8 +326,6 @@ const Staff = () => {
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-          console.log("Parsed Teacher Excel data:", jsonData);
 
           if (jsonData.length === 0) {
             alert(
@@ -454,8 +445,6 @@ const Staff = () => {
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-          console.log("Parsed Excel data:", jsonData);
 
           if (jsonData.length === 0) {
             alert(
@@ -591,7 +580,7 @@ const Staff = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
+          <button className="flex items-center gap-2 bg-white border cursor-pointer border-slate-200 px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition-colors">
             <Download size={18} />
             <span>Export CSV</span>
           </button>
@@ -811,9 +800,9 @@ const Staff = () => {
                     setEntryMode("manual");
                     setUploadedFile(null);
                   }}
-                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200"
+                  className="w-8 h-8 rounded-full flex items-center hover:bg-slate-200 justify-center cursor-pointer"
                 >
-                  <MoreVertical size={20} className="rotate-45" />
+                  <CircleX size={20} className="text-slate-500 cursor-pointer"/>
                 </button>
               </div>
 
