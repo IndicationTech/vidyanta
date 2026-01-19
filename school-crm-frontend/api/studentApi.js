@@ -55,9 +55,6 @@ export const getStudentById = async (id) => {
  */
 export const createStudent = async (studentData) => {
   try {
-    console.log("Sending student data:", studentData);
-    console.log("API URL:", `${API_BASE_URL}/students`);
-
     const response = await fetch(`${API_BASE_URL}/students`, {
       method: "POST",
       headers: {
@@ -65,10 +62,8 @@ export const createStudent = async (studentData) => {
       },
       body: JSON.stringify(studentData),
     });
-
-    console.log("Response status:", response.status);
     const data = await response.json();
-    console.log("Response data:", data);
+
 
     if (!response.ok) {
       throw new Error(data.message || "Failed to create student");

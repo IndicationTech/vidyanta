@@ -19,52 +19,46 @@ import {
 
 const Academics = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [timetable, setTimetable] = useState < any > null;
+  const [timetable, setTimetable] = useState(null);
   const [selectedClass, setSelectedClass] = useState("10th A");
-  const [userRole, setUserRole] = useState < string > "";
-  const [timetableDataState, setTimetableDataState] = useState < any > null;
+  const [userRole, setUserRole] = useState("");
+  const [timetableDataState, setTimetableDataState] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingPeriod, setEditingPeriod] =
-    (useState < EditingPeriod) | (null > null);
+  const [editingPeriod, setEditingPeriod] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [activeDay, setActiveDay] = useState("Monday");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addTimetableForm, setAddTimetableForm] =
-    useState <
-    TimetableFormData >
-    {
-      class: "",
-      section: "A",
-      subjectGroup: "Science",
-      periodStartTime: "08:00",
-      duration: "45",
-      days: {
-        Monday: [],
-        Tuesday: [],
-        Wednesday: [],
-        Thursday: [],
-        Friday: [],
-      },
-    };
-  const [timetableForm, setTimetableForm] =
-    useState <
-    TimetableFormData >
-    {
-      class: "10th A",
-      section: "A",
-      subjectGroup: "Science",
-      periodStartTime: "08:00",
-      duration: "45",
-      days: {
-        Monday: [],
-        Tuesday: [],
-        Wednesday: [],
-        Thursday: [],
-        Friday: [],
-        Saturday: [],
-      },
-    };
+  const [addTimetableForm, setAddTimetableForm] = useState({
+    class: "",
+    section: "A",
+    subjectGroup: "Science",
+    periodStartTime: "08:00",
+    duration: "45",
+    days: {
+      Monday: [],
+      Tuesday: [],
+      Wednesday: [],
+      Thursday: [],
+      Friday: [],
+    },
+  });
+
+  const [timetableForm, setTimetableForm] = useState({
+    class: "10th A",
+    section: "A",
+    subjectGroup: "Science",
+    periodStartTime: "08:00",
+    duration: "45",
+    days: {
+      Monday: [],
+      Tuesday: [],
+      Wednesday: [],
+      Thursday: [],
+      Friday: [],
+      Saturday: [],
+    },
+  });
 
   useEffect(() => {
     const role = localStorage.getItem("userRole") || "Student";
@@ -184,9 +178,6 @@ const Academics = () => {
 
     // Update the timetable data for the selected class
     setTimetableDataState(updatedTimetableData);
-    console.log("Saving timetable:", data);
-    console.log("Updated timetable data:", updatedTimetableData);
-
     setShowEditModal(false);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2000);
@@ -207,8 +198,6 @@ const Academics = () => {
 
     // Store the timetable data for the selected class
     setTimetableDataState(newTimetableData);
-    console.log("Creating new timetable:", data);
-    console.log("New timetable data:", newTimetableData);
 
     setShowAddModal(false);
     setSaveSuccess(true);
@@ -654,7 +643,7 @@ const Academics = () => {
     <div className="space-y-6 pb-8 px-6 pt-6 max-w-full">
       {/* Success Toast */}
       {saveSuccess && (
-        <div className="fixed top-4 right-4 z-[9999] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slide-in">
+        <div className="fixed top-4 right-4 z-9999 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slide-in">
           <Save size={18} />
           <span className="font-semibold">Changes saved successfully!</span>
         </div>
@@ -696,7 +685,7 @@ const Academics = () => {
           <select
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
-            className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
+            className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
           >
             <option value="10th A">Class 10th A</option>
             <option value="10th B">Class 10th B</option>
@@ -704,14 +693,14 @@ const Academics = () => {
           </select>
           <button
             onClick={handlePrint}
-            className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
+            className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
           >
             <Printer size={16} />
             Print
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
+            className="px-5 py-2.5 bg-linear-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
           >
             <Plus size={18} />
             Add Timetable
@@ -720,7 +709,7 @@ const Academics = () => {
           {isAdmin && (
             <button
               onClick={handleOpenEditTimetable}
-              className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
+              className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
             >
               <Edit2 size={18} />
               Edit Timetable
@@ -729,7 +718,7 @@ const Academics = () => {
 
           <button
             onClick={handleSaveDraft}
-            className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
+            className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
           >
             <Save size={16} />
             Save Draft
@@ -740,9 +729,9 @@ const Academics = () => {
       {/* Timetable Card */}
       <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden w-full max-w-full">
         {/* Card Header */}
-        <div className="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+        <div className="px-6 py-5 border-b border-slate-200 bg-linear-to-r from-slate-50 to-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
               <Calendar size={20} className="text-white" />
             </div>
             <div>
@@ -760,13 +749,13 @@ const Academics = () => {
         <div className="p-6 bg-slate-50/50 overflow-x-auto max-w-full">
           <div className="grid grid-cols-6 gap-4 min-w-max w-fit">
             {days.map((day) => (
-              <div key={day} className="min-w-[200px]">
+              <div key={day} className="min-w-50">
                 {/* Day Header */}
                 <div className="sticky top-0 z-10 mb-4 pb-3 bg-slate-50/80 backdrop-blur-sm">
                   <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide text-center">
                     {day}
                   </h4>
-                  <div className="mt-1 h-1 w-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mx-auto"></div>
+                  <div className="mt-1 h-1 w-12 bg-linear-to-r from-indigo-500 to-purple-500 rounded-full mx-auto"></div>
                 </div>
 
                 {/* Schedule Cards */}
@@ -792,7 +781,7 @@ const Academics = () => {
                       return (
                         <div
                           key={index}
-                          className="p-4 rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 text-center"
+                          className="p-4 rounded-lg bg-linear-to-br from-orange-50 to-amber-50 border border-orange-200 text-center"
                         >
                           <p className="text-sm font-bold text-orange-700 uppercase tracking-wide">
                             🍽️ Lunch Break
@@ -838,7 +827,7 @@ const Academics = () => {
                         <div className="flex items-center gap-2">
                           {/* Avatar */}
                           <div
-                            className={`w-7 h-7 rounded-full ${style.bg} border-2 ${style.border} flex items-center justify-center flex-shrink-0`}
+                            className={`w-7 h-7 rounded-full ${style.bg} border-2 ${style.border} flex items-center justify-center shrink-0`}
                           >
                             <span
                               className={`text-[10px] font-bold ${style.text}`}

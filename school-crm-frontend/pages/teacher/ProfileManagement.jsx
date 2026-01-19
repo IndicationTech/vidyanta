@@ -104,22 +104,8 @@ const ProfileManagement = () => {
         return;
       }
 
-      console.log("Loading teacher profile with ID:", storedId);
       const res = await getProfile(storedId);
       const data = res.data;
-
-      console.log("📥 Received profile data:", {
-        _id: data._id,
-        name: data.name,
-        email: data.email,
-        subject: data.subject,
-        qualification: data.qualification,
-        experience: data.experience,
-        dateOfJoining: data.dateOfJoining,
-        phone: data.phone,
-        address: data.address,
-        allFields: Object.keys(data),
-      });
 
       // Absolute URLs (like from Gravatar) start with http/https, use them directly
       // Local uploads are relative paths like /uploads/profiles/...
@@ -142,8 +128,6 @@ const ProfileManagement = () => {
           data.name || "User"
         )}&background=6366f1&color=fff&size=200`;
       }
-
-      console.log("Resolved photo URL:", resolvedPhoto);
 
       setProfile({
         ...data,
@@ -199,9 +183,7 @@ const ProfileManagement = () => {
       const formData = new FormData();
       formData.append("photo", file);
 
-      console.log("Uploading photo for user:", profile._id);
       const res = await uploadPhoto(profile._id, formData);
-      console.log("Photo upload response:", res.data);
 
       // Get the photo URL from the response
       const photoUrl = res.data?.photo || res.data?.data?.photo;
@@ -212,7 +194,6 @@ const ProfileManagement = () => {
         return;
       }
 
-      console.log("Photo URL received:", photoUrl);
       setProfile({ ...profile, photo: photoUrl });
       alert("Photo updated successfully!");
     } catch (error) {
@@ -342,7 +323,7 @@ const ProfileManagement = () => {
           </div>
           <button
             onClick={openEditDrawer}
-            className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 shadow-md"
+            className="flex items-center gap-2 bg-linear-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 shadow-md"
           >
             <Edit size={18} />
             <span className="font-semibold">Edit Profile</span>
@@ -352,7 +333,7 @@ const ProfileManagement = () => {
 
       {/* Profile Header Card */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-        <div className="h-40 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden">
+        <div className="h-40 bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute top-4 right-4 flex gap-2">
             <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-bold text-indigo-600 flex items-center gap-1">
@@ -412,7 +393,7 @@ const ProfileManagement = () => {
           </div>
 
           {/* Profile Completion Bar */}
-          <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+          <div className="mb-6 p-4 bg-linear-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                 <Target size={16} className="text-indigo-600" />
@@ -424,7 +405,7 @@ const ProfileManagement = () => {
             </div>
             <div className="w-full bg-white rounded-full h-2.5 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                className="h-full bg-linear-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
                 style={{ width: `${profileCompletion}%` }}
               ></div>
             </div>
@@ -474,7 +455,7 @@ const ProfileManagement = () => {
               {demoEnhancements.achievements.map((achievement, idx) => (
                 <div
                   key={idx}
-                  className="px-4 py-2 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg flex items-center gap-2 hover:scale-105 transition-transform duration-200"
+                  className="px-4 py-2 bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg flex items-center gap-2 hover:scale-105 transition-transform duration-200"
                 >
                   <Sparkles size={14} className="text-yellow-600" />
                   <span className="text-sm font-semibold text-slate-700">
@@ -496,7 +477,7 @@ const ProfileManagement = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`relative flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-bold transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md scale-105"
+                    ? "bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-md scale-105"
                     : "text-slate-600 hover:text-slate-900 hover:bg-white"
                 }`}
               >
@@ -893,7 +874,7 @@ const ProfileManagement = () => {
           <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl animate-slideInRight">
             <div className="h-full flex flex-col">
               {/* Drawer Header */}
-              <div className="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600">
+              <div className="px-6 py-5 border-b border-slate-200 bg-linear-to-r from-indigo-600 to-purple-600">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xl font-bold text-white">
@@ -917,7 +898,7 @@ const ProfileManagement = () => {
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
                   <AlertCircle
                     size={20}
-                    className="text-yellow-600 flex-shrink-0 mt-0.5"
+                    className="text-yellow-600 shrink-0 mt-0.5"
                   />
                   <div>
                     <p className="text-sm font-semibold text-yellow-900">
@@ -1005,7 +986,7 @@ const ProfileManagement = () => {
                 </button>
                 <button
                   onClick={handleUpdate}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+                  className="flex-1 px-4 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
                 >
                   Save Changes
                 </button>
@@ -1063,7 +1044,7 @@ const StatCard = ({ icon: Icon, label, value, color }) => {
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200 hover:scale-105">
       <div
-        className={`w-10 h-10 bg-gradient-to-br ${colorClasses[color]} rounded-lg flex items-center justify-center mb-3 text-white`}
+        className={`w-10 h-10 bg-linear-to-br ${colorClasses[color]} rounded-lg flex items-center justify-center mb-3 text-white`}
       >
         <Icon size={20} />
       </div>
@@ -1075,7 +1056,7 @@ const StatCard = ({ icon: Icon, label, value, color }) => {
 
 const SectionHeader = ({ title, icon: Icon }) => (
   <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
-    <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+    <div className="w-8 h-8 bg-linear-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
       <Icon size={16} className="text-white" />
     </div>
     <h4 className="text-lg font-bold text-slate-900">{title}</h4>
@@ -1132,7 +1113,7 @@ const LeaveStatCard = ({ label, value, color, icon: Icon }) => {
 
 const DocumentCard = ({ document }) => (
   <div className="bg-white border-2 border-slate-200 rounded-xl p-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200 flex items-center gap-4">
-    <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0">
+    <div className="w-14 h-14 bg-linear-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shrink-0">
       <FileText size={24} className="text-white" />
     </div>
     <div className="flex-1 min-w-0">
@@ -1141,7 +1122,7 @@ const DocumentCard = ({ document }) => (
         {document.type} • {document.size} • Uploaded {document.uploaded}
       </p>
     </div>
-    <div className="flex gap-2 flex-shrink-0">
+    <div className="flex gap-2 shrink-0">
       <button className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center hover:bg-indigo-200 transition-colors">
         <Eye size={18} />
       </button>

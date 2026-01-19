@@ -64,7 +64,7 @@ const ManageSchools = () => {
             Global control panel for all registered schools under the network.
           </p>
         </div>
-        <button className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+        <button className="flex items-center cursor-pointer gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
           <Plus size={18} />
           <span>Onboard New School</span>
         </button>
@@ -131,11 +131,11 @@ const ManageSchools = () => {
             </div>
 
             <div className="bg-slate-50/50 px-6 py-3 flex items-center gap-4 border-t border-slate-50">
-              <button className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:underline">
+              <button className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:underline cursor-pointer">
                 <Settings size={12} />
                 Settings
               </button>
-              <button className="text-xs font-bold text-slate-500 flex items-center gap-1 hover:underline">
+              <button className="text-xs font-bold text-slate-500 flex items-center gap-1 hover:underline cursor-pointer">
                 <Globe size={12} />
                 Website
               </button>

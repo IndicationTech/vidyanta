@@ -379,7 +379,7 @@ const StudentDashboard = ({ onNavigate }) => {
   return (
     <div className="space-y-6">
       {/* Header / Student Profile Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
+      <div className="bg-linear-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border-4 border-white/30">
@@ -494,7 +494,7 @@ const StudentDashboard = ({ onNavigate }) => {
                 <h4 className="text-sm font-semibold mb-3">
                   Attendance Distribution
                 </h4>
-                <div className="h-[200px]">
+                <div className="h-50">
                   <ResponsiveContainer
                     width="100%"
                     height="100%"
@@ -587,7 +587,7 @@ const StudentDashboard = ({ onNavigate }) => {
           {/* Performance Analytics */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
             <h3 className="text-lg font-bold mb-4">Performance Analytics</h3>
-            <div className="h-[300px]">
+            <div className="h-75">
               <ResponsiveContainer
                 width="100%"
                 height="100%"
@@ -736,7 +736,7 @@ const StudentDashboard = ({ onNavigate }) => {
                 >
                   <ChevronLeft size={18} />
                 </button>
-                <span className="text-sm font-medium min-w-[120px] text-center">
+                <span className="text-sm font-medium min-w-30 text-center">
                   {monthNames[currentMonth.getMonth()]}{" "}
                   {currentMonth.getFullYear()}
                 </span>

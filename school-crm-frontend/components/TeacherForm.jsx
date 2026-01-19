@@ -17,6 +17,7 @@ import {
   Globe,
   Download,
   CheckCircle2,
+  CircleX 
 } from "lucide-react";
 
 const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
@@ -256,7 +257,7 @@ const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
               onClick={onClose}
               className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors"
             >
-              <X size={24} className="text-slate-500" />
+              <CircleX size={24} className="text-slate-500 cursor-pointer" />
             </button>
           </div>
 

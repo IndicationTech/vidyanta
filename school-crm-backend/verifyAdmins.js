@@ -10,14 +10,10 @@ const MONGODB_URI =
 const verifyAdmins = async () => {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log("📦 Connected to MongoDB\n");
 
     const admins = await User.find({
       role: { $in: ["SUPER_ADMIN", "SCHOOL_ADMIN"] },
     }).select("name email role status");
-
-    console.log("✅ Admin Accounts in Database:");
-    console.log("================================\n");
 
     admins.forEach((admin, index) => {
       console.log(`${index + 1}. ${admin.name}`);
@@ -26,8 +22,6 @@ const verifyAdmins = async () => {
       console.log(`   Status: ${admin.status}`);
       console.log("");
     });
-
-    console.log(`Total admin accounts: ${admins.length}`);
     process.exit(0);
   } catch (error) {
     console.error("❌ Error:", error);

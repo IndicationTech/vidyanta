@@ -98,7 +98,7 @@ const AccountsDashboard = () => {
           <h3 className="text-lg font-bold mb-6">
             Revenue vs Expenses
           </h3>
-          <div className="h-[300px]">
+          <div className="h-75">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
               <AreaChart data={data}>
                 <defs>

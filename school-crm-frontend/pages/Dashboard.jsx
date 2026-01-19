@@ -102,7 +102,7 @@ const Dashboard = ({ role }) => {
           <h3 className="text-lg font-bold mb-6">
             Revenue & Enrollment Growth
           </h3>
-          <div className="h-[300px]">
+          <div className="h-75">
             <ResponsiveContainer
               width="100%"
               height="100%"

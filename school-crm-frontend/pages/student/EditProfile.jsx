@@ -100,10 +100,10 @@ const EditProfile = () => {
     }
   };
 
-  const handleSave = () => {
-    // Save logic
-    console.log("Saving profile data:", formData);
-  };
+  // const handleSave = () => {
+  //   // Save logic
+  //   console.log("Saving profile data:", formData);
+  // };
 
   return (
     <div className="space-y-6">
@@ -210,7 +210,7 @@ const EditProfile = () => {
           <h3 className="text-lg font-bold mb-6">Personal Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2 items-center gap-2">
                 <User size={16} />
                 First Name
               </label>
@@ -233,7 +233,7 @@ const EditProfile = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
                 <Calendar size={16} />
                 Date of Birth
               </label>
@@ -282,7 +282,7 @@ const EditProfile = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
                 <Mail size={16} />
                 Email
               </label>
@@ -294,7 +294,7 @@ const EditProfile = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
                 <Phone size={16} />
                 Phone
               </label>
@@ -319,7 +319,7 @@ const EditProfile = () => {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
                 <MapPin size={16} />
                 Address
               </label>
