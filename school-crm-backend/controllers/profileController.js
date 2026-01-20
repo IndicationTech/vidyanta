@@ -156,6 +156,21 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+export const deleteProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("❌ Error deleting user:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const uploadPhoto = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

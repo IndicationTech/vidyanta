@@ -6,6 +6,8 @@ import {
   uploadPhoto,
   createStaffProfile,
   getAllStaff,
+  deleteStaff,
+  updateProfile,
 } from "../api/profileApi";
 import {
   Plus,
@@ -26,6 +28,10 @@ import {
 const Staff = () => {
   const [showModal, setShowModal] = useState(false);
   const [showTeacherModal, setShowTeacherModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [teacherModalMode, setTeacherModalMode] = useState("add"); // "add" or "edit"
+  const [teacherInitialData, setTeacherInitialData] = useState(null);
   const [entryMode, setEntryMode] = useState("manual"); // "manual" or "auto"
   const [teacherEntryMode, setTeacherEntryMode] = useState("manual"); // "manual" or "auto" for teachers
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -60,15 +66,15 @@ const Staff = () => {
           member.role === "TEACHER"
             ? "Teacher"
             : member.role === "PARENT"
-            ? "Parent"
-            : "Account HR",
+              ? "Parent"
+              : "Account HR",
         department:
           member.department ||
           (member.role === "TEACHER"
             ? member.subject || "Teaching"
             : member.role === "PARENT"
-            ? "Parent"
-            : "HR"),
+              ? "Parent"
+              : "HR"),
         email: member.email,
         phone: member.phone || "N/A",
         status: member.status || "Active",
@@ -107,9 +113,22 @@ const Staff = () => {
         languages: Array.isArray(data.languages)
           ? data.languages.filter((l) => l.trim() !== "")
           : [],
+        classAssigned: Array.isArray(data.classAssigned)
+          ? data.classAssigned.join(", ")
+          : data.classAssigned || "",
+        section: Array.isArray(data.section)
+          ? data.section.join(", ")
+          : data.section || "",
+        subject: Array.isArray(data.subject)
+          ? data.subject.join(", ")
+          : data.subject || "",
       };
 
-      const response = await createTeacherProfile(payload);
+      // Handle both create and update
+      const response =
+        teacherModalMode === "edit" && selectedStaff
+          ? await updateProfile(selectedStaff.id, payload)
+          : await createTeacherProfile(payload);
       const saved = response.data;
 
       let photoUrl = saved.photo;
@@ -122,7 +141,7 @@ const Staff = () => {
         } catch (uploadError) {
           console.warn(
             "Photo upload failed, but profile was created:",
-            uploadError
+            uploadError,
           );
           // Continue even if photo upload fails - profile is already saved
         }
@@ -148,8 +167,13 @@ const Staff = () => {
       await fetchStaffData();
 
       setShowTeacherModal(false);
+      setTeacherModalMode("add");
+      setTeacherInitialData(null);
+      setSelectedStaff(null);
       alert(
-        `Teacher ${saved.name} created successfully! You can now view their profile.`
+        teacherModalMode === "edit"
+          ? `Teacher ${saved.name} updated successfully!`
+          : `Teacher ${saved.name} created successfully! You can now view their profile.`,
       );
     } catch (error) {
       console.error("Failed to save teacher", error);
@@ -199,13 +223,13 @@ const Staff = () => {
       });
 
       alert(
-        `Staff member ${saved.name} created successfully! They can now login with their credentials.`
+        `Staff member ${saved.name} created successfully! They can now login with their credentials.`,
       );
     } catch (error) {
       console.error("Failed to save staff member", error);
       alert(
         error.response?.data?.message ||
-          "Failed to create staff member. Please try again."
+          "Failed to create staff member. Please try again.",
       );
     }
   };
@@ -329,7 +353,7 @@ const Staff = () => {
 
           if (jsonData.length === 0) {
             alert(
-              "The uploaded file is empty. Please add teacher data and try again."
+              "The uploaded file is empty. Please add teacher data and try again.",
             );
             return;
           }
@@ -378,7 +402,7 @@ const Staff = () => {
               errors.push(
                 `${
                   row.FirstName || row.firstName || "Unknown"
-                }: ${errorMessage}`
+                }: ${errorMessage}`,
               );
 
               // Store failed row with incomplete fields as-is
@@ -417,7 +441,7 @@ const Staff = () => {
         } catch (parseError) {
           console.error("Error parsing file:", parseError);
           alert(
-            "Failed to parse the file. Please ensure it's a valid Excel/CSV file with the correct format."
+            "Failed to parse the file. Please ensure it's a valid Excel/CSV file with the correct format.",
           );
         }
       };
@@ -448,7 +472,7 @@ const Staff = () => {
 
           if (jsonData.length === 0) {
             alert(
-              "The uploaded file is empty. Please add staff data and try again."
+              "The uploaded file is empty. Please add staff data and try again.",
             );
             return;
           }
@@ -497,7 +521,7 @@ const Staff = () => {
               errorCount++;
               const errorMessage = err.response?.data?.message || err.message;
               errors.push(
-                `${row.Name || row.name || "Unknown"}: ${errorMessage}`
+                `${row.Name || row.name || "Unknown"}: ${errorMessage}`,
               );
 
               // Store failed row with incomplete fields as-is
@@ -536,7 +560,7 @@ const Staff = () => {
         } catch (parseError) {
           console.error("Error parsing file:", parseError);
           alert(
-            "Failed to parse the file. Please ensure it's a valid Excel/CSV file with the correct format."
+            "Failed to parse the file. Please ensure it's a valid Excel/CSV file with the correct format.",
           );
         }
       };
@@ -548,24 +572,171 @@ const Staff = () => {
     }
   };
 
+  const handleEdit = async (member) => {
+    try {
+      setSelectedStaff(member);
+
+      // Fetch full profile data using the getProfile API
+      const { getProfile } = await import("../api/profileApi");
+      const response = await getProfile(member.id);
+      const fullData = response.data;
+
+      // Split name into firstName and lastName
+      const nameParts = fullData.name.split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      // Prepare initial data for TeacherForm
+      const initialData = {
+        ...fullData,
+        firstName: firstName,
+        lastName: lastName,
+        teacherId: fullData.teacherId || fullData._id,
+        gender: fullData.gender || "",
+        dob: fullData.dob || "",
+        bloodGroup: fullData.bloodGroup || "",
+        maritalStatus: fullData.maritalStatus || "",
+        languages: fullData.languages || [],
+        classAssigned: Array.isArray(fullData.classAssigned)
+          ? fullData.classAssigned
+          : fullData.classAssigned
+            ? fullData.classAssigned
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
+        section: Array.isArray(fullData.section)
+          ? fullData.section
+          : fullData.section
+            ? fullData.section
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
+        subject: Array.isArray(fullData.subject)
+          ? fullData.subject
+          : fullData.subject
+            ? fullData.subject
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
+        qualification: fullData.qualification || "",
+        experience: fullData.experience || "",
+        dateOfJoining: fullData.dateOfJoining || "",
+        status: fullData.status || "Active",
+        phone: fullData.phone || "",
+        email: fullData.email || "",
+        address: fullData.address || "",
+        permanentAddress: fullData.permanentAddress || "",
+        fatherName: fullData.fatherName || "",
+        motherName: fullData.motherName || "",
+        emergencyContact: fullData.emergencyContact || "",
+        emergencyContactName: fullData.emergencyContactName || "",
+        aadharNumber: fullData.aadharNumber || "",
+        panNumber: fullData.panNumber || "",
+        bankName: fullData.bankName || "",
+        accountNumber: fullData.accountNumber || "",
+        ifscCode: fullData.ifscCode || "",
+        basicSalary: fullData.basicSalary || "",
+        medicalLeaves: fullData.medicalLeaves || 0,
+        casualLeaves: fullData.casualLeaves || 0,
+        sickLeaves: fullData.sickLeaves || 0,
+        maternityLeaves: fullData.maternityLeaves || 0,
+        password: "", // Don't populate password
+        confirmPassword: "",
+      };
+
+      setTeacherInitialData(initialData);
+      setTeacherModalMode("edit");
+      setShowTeacherModal(true);
+    } catch (error) {
+      console.error("Error loading staff data:", error);
+      alert("Failed to load staff data. Please try again.");
+    }
+  };
+
+  const handleDelete = async (memberId) => {
+    if (!window.confirm("Are you sure you want to delete this staff member?")) {
+      return;
+    }
+
+    try {
+      await deleteStaff(memberId);
+      alert("Staff member deleted successfully!");
+      fetchStaffData();
+    } catch (error) {
+      console.error("Failed to delete staff member:", error);
+      alert("Failed to delete staff member. Please try again.");
+    }
+  };
+
+  const handleUpdateStaff = async (e) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        department: formData.department,
+        role:
+          formData.role === "Teacher"
+            ? "TEACHER"
+            : formData.role === "Parent"
+              ? "PARENT"
+              : "ACCOUNTS_HR",
+      };
+
+      // Only include password if it's not empty
+      if (formData.password) {
+        payload.password = formData.password;
+      }
+
+      await updateProfile(selectedStaff.id, payload);
+      alert("Staff member updated successfully!");
+      setShowEditModal(false);
+      setSelectedStaff(null);
+      setFormData({
+        name: "",
+        role: "",
+        department: "",
+        email: "",
+        phone: "",
+        password: "",
+      });
+      fetchStaffData();
+    } catch (error) {
+      console.error("Failed to update staff member:", error);
+      alert("Failed to update staff member. Please try again.");
+    }
+  };
+
   // Filter staff based on search query and role filter
-  const filteredStaff = staff.filter((member) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredStaff = staff
+    .filter((member) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        member.email.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesRole =
-      roleFilter === "All Roles" ||
-      member.role === roleFilter ||
-      (roleFilter === "Teacher" && member.role === "Teacher") ||
-      (roleFilter === "Parent" && member.role === "Parent") ||
-      (roleFilter === "Account HR" && member.role === "Account HR");
+      const matchesRole =
+        roleFilter === "All Roles" ||
+        member.role === roleFilter ||
+        (roleFilter === "Teacher" && member.role === "Teacher") ||
+        (roleFilter === "Parent" && member.role === "Parent") ||
+        (roleFilter === "Account HR" && member.role === "Account HR");
 
-    return matchesSearch && matchesRole;
-  });
+      return matchesSearch && matchesRole;
+    })
+    .sort((a, b) => {
+      // Sort by createdAt date in descending order (newest first)
+      const dateA = new Date(a.createdAt || 0);
+      const dateB = new Date(b.createdAt || 0);
+      return dateB - dateA;
+    });
 
   return (
     <div className="space-y-6">
@@ -592,7 +763,12 @@ const Staff = () => {
             <span>Add Staff Member</span>
           </button>
           <button
-            onClick={() => setShowTeacherModal(true)}
+            onClick={() => {
+              setTeacherModalMode("add");
+              setTeacherInitialData(null);
+              setSelectedStaff(null);
+              setShowTeacherModal(true);
+            }}
             className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200"
           >
             <Plus size={18} />
@@ -760,8 +936,8 @@ const Staff = () => {
                           member.status === "Active"
                             ? "bg-green-100 text-green-600"
                             : member.status === "On Leave"
-                            ? "bg-amber-100 text-amber-600"
-                            : "bg-slate-100 text-slate-600"
+                              ? "bg-amber-100 text-amber-600"
+                              : "bg-slate-100 text-slate-600"
                         }`}
                       >
                         {member.status}
@@ -769,10 +945,16 @@ const Staff = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-white border border-transparent hover:border-slate-100">
+                        <button
+                          onClick={() => handleEdit(member)}
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-white border border-transparent hover:border-slate-100"
+                        >
                           <Edit size={16} />
                         </button>
-                        <button className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-white border border-transparent hover:border-slate-100">
+                        <button
+                          onClick={() => handleDelete(member.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 transition-colors rounded-lg hover:bg-white border border-transparent hover:border-slate-100"
+                        >
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -802,7 +984,10 @@ const Staff = () => {
                   }}
                   className="w-8 h-8 rounded-full flex items-center hover:bg-slate-200 justify-center cursor-pointer"
                 >
-                  <CircleX size={20} className="text-slate-500 cursor-pointer"/>
+                  <CircleX
+                    size={20}
+                    className="text-slate-500 cursor-pointer"
+                  />
                 </button>
               </div>
 
@@ -1186,8 +1371,13 @@ const Staff = () => {
           onClose={() => {
             setShowTeacherModal(false);
             setTeacherEntryMode("manual");
+            setTeacherModalMode("add");
+            setTeacherInitialData(null);
+            setSelectedStaff(null);
           }}
           onSave={handleSaveTeacher}
+          initialData={teacherInitialData}
+          mode={teacherModalMode}
         />
       )}
 
@@ -1427,6 +1617,155 @@ const Staff = () => {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Staff Modal */}
+      {showEditModal && selectedStaff && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-slate-900">
+                  Edit Staff Member
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedStaff(null);
+                    setFormData({
+                      name: "",
+                      role: "",
+                      department: "",
+                      email: "",
+                      phone: "",
+                      password: "",
+                    });
+                  }}
+                  className="w-8 h-8 rounded-full flex items-center hover:bg-slate-200 justify-center cursor-pointer"
+                >
+                  <CircleX
+                    size={20}
+                    className="text-slate-500 cursor-pointer"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdateStaff} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Full Name
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder="e.g. Dr. Jane Doe"
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Role
+                  </label>
+                  <select
+                    required
+                    value={formData.department}
+                    onChange={(e) =>
+                      setFormData({ ...formData, department: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  >
+                    <option value="">Select Role</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Account HR">Account HR</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Email
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="email@edunexus.ai"
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Password (leave blank to keep current)
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Enter new password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    autoComplete="new-password"
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Phone
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    placeholder="+91 00000 00000"
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedStaff(null);
+                    setFormData({
+                      name: "",
+                      role: "",
+                      department: "",
+                      email: "",
+                      phone: "",
+                      password: "",
+                    });
+                  }}
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 shadow-lg shadow-indigo-100"
+                >
+                  Update Staff Member
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

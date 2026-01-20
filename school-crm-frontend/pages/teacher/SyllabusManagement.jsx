@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BookOpen,
   CheckCircle,
@@ -16,18 +16,87 @@ import {
   File,
   Video,
   Presentation,
+  AlertCircle,
 } from "lucide-react";
+import API from "../../api/authApi";
 
 const SyllabusManagement = () => {
   const [selectedClass, setSelectedClass] = useState("10th A");
-  const [selectedSemester, setSelectedSemester] = (useState < 1) | (2 > 1);
+  const [selectedSemester, setSelectedSemester] = useState(1);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [homeworkModalOpen, setHomeworkModalOpen] = useState(false);
-  const [selectedTopicForUpload, setSelectedTopicForUpload] =
-    (useState < string) | (null > null);
+  const [selectedTopicForUpload, setSelectedTopicForUpload] = useState(null);
   const [youtubeLink, setYoutubeLink] = useState("");
   const [homeworkText, setHomeworkText] = useState("");
-  const [expandedSubjects, setExpandedSubjects] = useState < string > [];
+  const [expandedSubjects, setExpandedSubjects] = useState([]);
+
+  // New states for fetched data
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [teacherProfile, setTeacherProfile] = useState(null);
+  const [syllabusData, setSyllabusData] = useState([]);
+  const [teacherClasses, setTeacherClasses] = useState([]);
+  const [teacherSubjects, setTeacherSubjects] = useState([]);
+
+  // Fetch teacher profile and syllabus data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Get teacher ID from localStorage or API
+        const teacherId =
+          localStorage.getItem("teacherProfileId") ||
+          localStorage.getItem("userId");
+
+        if (!teacherId) {
+          setError("Teacher ID not found. Please login again.");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch teacher profile using authenticated API
+        const profileResponse = await API.get(`/profile/${teacherId}`);
+        const profile = profileResponse.data;
+        setTeacherProfile(profile);
+
+        // Parse teacher's assigned classes and subjects
+        const classes = Array.isArray(profile.classAssigned)
+          ? profile.classAssigned
+          : profile.classAssigned
+            ? profile.classAssigned.split(",").map((c) => c.trim())
+            : [];
+
+        const subjects = Array.isArray(profile.subject)
+          ? profile.subject
+          : profile.subject
+            ? profile.subject.split(",").map((s) => s.trim())
+            : [];
+
+        setTeacherClasses(classes);
+        setTeacherSubjects(subjects);
+
+        // Fetch all syllabus data assigned to this teacher using authenticated API
+        const syllabusResponse = await API.get(
+          `/syllabus/teacher/${teacherId}`,
+        );
+        setSyllabusData(syllabusResponse.data || []);
+
+        // Set first available class as selected
+        if (classes.length > 0) {
+          setSelectedClass(classes[0]);
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(err.response?.data?.message || "Failed to load syllabus data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const semester1Data = [
     {
@@ -1121,13 +1190,50 @@ const SyllabusManagement = () => {
     },
   ];
 
-  const [syllabusData, setSyllabusData] = useState({
-    semester1: semester1Data,
-    semester2: semester2Data,
+  const [syllabusState, setSyllabusState] = useState({
+    semester1: [],
+    semester2: [],
   });
 
+  // Filter syllabus data based on selected class, semester, and teacher's subjects
+  const filterSyllabusData = () => {
+    return syllabusData
+      .filter((item) => {
+        // Filter by standard - check if it matches the selected class
+        const standardMatch =
+          item.standard &&
+          selectedClass.toLowerCase().includes(item.standard.toLowerCase());
+
+        // Filter by subject - check if teacher is assigned to this subject
+        const subjectMatch =
+          item.subject &&
+          teacherSubjects.some(
+            (ts) => ts.toLowerCase() === item.subject.toLowerCase(),
+          );
+
+        return standardMatch && subjectMatch;
+      })
+      .map((item) => ({
+        id: item._id,
+        name: item.subject,
+        topics:
+          item.syllabusData && Array.isArray(item.syllabusData)
+            ? item.syllabusData.map((topic) => ({
+                id: topic._id || Math.random().toString(),
+                name: topic.topicName || topic.name,
+                status: "pending",
+                progress: 0,
+                date: topic.date || new Date().toISOString().split("T")[0],
+                materials: topic.materials || [],
+                homework: topic.homework || "Not assigned",
+                keyPoints: topic.keyPoints || [],
+              }))
+            : [],
+      }));
+  };
+
   const currentSemesterData =
-    selectedSemester === 1 ? syllabusData.semester1 : syllabusData.semester2;
+    selectedSemester === 1 ? filterSyllabusData() : filterSyllabusData();
 
   // Calculate overall progress
   const calculateOverallProgress = () => {
@@ -1148,11 +1254,11 @@ const SyllabusManagement = () => {
   const totalCompletedTopics = currentSemesterData.reduce(
     (acc, subject) =>
       acc + subject.topics.filter((t) => t.status === "completed").length,
-    0
+    0,
   );
   const totalTopics = currentSemesterData.reduce(
     (acc, subject) => acc + subject.topics.length,
-    0
+    0,
   );
 
   const getStatusColor = (status) => {
@@ -1169,71 +1275,20 @@ const SyllabusManagement = () => {
   };
 
   const handleMarkCompleted = (subjectId, topicId) => {
-    setSyllabusData((prev) => {
-      const semesterKey = selectedSemester === 1 ? "semester1" : "semester2";
-      return {
-        ...prev,
-        [semesterKey]: prev[semesterKey].map((subject) =>
-          subject.id === subjectId
-            ? {
-                ...subject,
-                topics: subject.topics.map((topic) =>
-                  topic.id === topicId
-                    ? { ...topic, status: "completed", progress: 100 }
-                    : topic
-                ),
-              }
-            : subject
-        ),
-      };
-    });
+    // In a real implementation, this would call an API to update the backend
+    alert("Topic marked as completed! (View only - updates via admin panel)");
   };
 
   const handleMarkInProgress = (subjectId, topicId) => {
-    setSyllabusData((prev) => {
-      const semesterKey = selectedSemester === 1 ? "semester1" : "semester2";
-      return {
-        ...prev,
-        [semesterKey]: prev[semesterKey].map((subject) =>
-          subject.id === subjectId
-            ? {
-                ...subject,
-                topics: subject.topics.map((topic) =>
-                  topic.id === topicId
-                    ? {
-                        ...topic,
-                        status: "in-progress",
-                        progress: topic.progress || 30,
-                      }
-                    : topic
-                ),
-              }
-            : subject
-        ),
-      };
-    });
+    // In a real implementation, this would call an API to update the backend
+    alert("Topic marked as in-progress! (View only - updates via admin panel)");
   };
 
   const handleReschedule = (subjectId, topicId) => {
-    const newDate = prompt("Enter new date (YYYY-MM-DD):");
-    if (newDate) {
-      setSyllabusData((prev) => {
-        const semesterKey = selectedSemester === 1 ? "semester1" : "semester2";
-        return {
-          ...prev,
-          [semesterKey]: prev[semesterKey].map((subject) =>
-            subject.id === subjectId
-              ? {
-                  ...subject,
-                  topics: subject.topics.map((topic) =>
-                    topic.id === topicId ? { ...topic, date: newDate } : topic
-                  ),
-                }
-              : subject
-          ),
-        };
-      });
-    }
+    // In a real implementation, this would call an API to reschedule
+    alert(
+      "Reschedule requests must be approved by admin. Please contact your administrator.",
+    );
   };
 
   const handleShare = (subjectId, topicId) => {
@@ -1241,7 +1296,7 @@ const SyllabusManagement = () => {
     const topic = subject?.topics.find((t) => t.id === topicId);
     if (topic) {
       alert(
-        `Sharing: ${topic.name}\nDate: ${topic.date}\nHomework: ${topic.homework}`
+        `Sharing: ${topic.name}\nDate: ${topic.date}\nHomework: ${topic.homework}`,
       );
     }
   };
@@ -1285,10 +1340,10 @@ const SyllabusManagement = () => {
                             },
                           ],
                         }
-                      : topic
+                      : topic,
                   ),
                 }
-              : subject
+              : subject,
           ),
         };
       });
@@ -1322,10 +1377,10 @@ const SyllabusManagement = () => {
                             { type: fileType, name: file.name, url: fileUrl },
                           ],
                         }
-                      : topic
+                      : topic,
                   ),
                 }
-              : subject
+              : subject,
           ),
         };
       });
@@ -1346,10 +1401,10 @@ const SyllabusManagement = () => {
                   topics: subject.topics.map((topic) =>
                     topic.id === topicId
                       ? { ...topic, homework: homeworkText || "Not assigned" }
-                      : topic
+                      : topic,
                   ),
                 }
-              : subject
+              : subject,
           ),
         };
       });
@@ -1372,13 +1427,13 @@ const SyllabusManagement = () => {
                     ? {
                         ...topic,
                         materials: topic.materials.filter(
-                          (_, idx) => idx !== materialIndex
+                          (_, idx) => idx !== materialIndex,
                         ),
                       }
-                    : topic
+                    : topic,
                 ),
               }
-            : subject
+            : subject,
         ),
       };
     });
@@ -1403,7 +1458,7 @@ const SyllabusManagement = () => {
     setExpandedSubjects((prev) =>
       prev.includes(subjectId)
         ? prev.filter((id) => id !== subjectId)
-        : [...prev, subjectId]
+        : [...prev, subjectId],
     );
   };
 
@@ -1413,481 +1468,520 @@ const SyllabusManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Syllabus & Lesson Plan</h2>
-          <p className="text-slate-500">
-            Track syllabus progress and manage lesson plans
-          </p>
+      {/* Loading State */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center p-12">
+          <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-500">Loading your syllabus data...</p>
         </div>
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="10th A">10th A</option>
-            <option value="10th B">10th B</option>
-            <option value="11th A">11th A</option>
-            <option value="12th A">12th A</option>
-          </select>
-        </div>
-      </div>
+      )}
 
-      {/* Semester Toggle */}
-      <div className="flex items-center justify-center gap-4 bg-white rounded-xl p-2 shadow-sm border border-slate-100 w-fit mx-auto">
-        <button
-          onClick={() => setSelectedSemester(1)}
-          className={`px-8 py-3 rounded-lg font-semibold transition-all ${
-            selectedSemester === 1
-              ? "bg-indigo-600 text-white shadow-md"
-              : "bg-transparent text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          📌 Semester 1
-        </button>
-        <button
-          onClick={() => setSelectedSemester(2)}
-          className={`px-8 py-3 rounded-lg font-semibold transition-all ${
-            selectedSemester === 2
-              ? "bg-indigo-600 text-white shadow-md"
-              : "bg-transparent text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          📌 Semester 2
-        </button>
-      </div>
-
-      {/* Overall Progress */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white">
-        <div className="flex items-center justify-between">
+      {/* Error State */}
+      {error && !loading && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-center gap-4">
+          <AlertCircle className="text-red-600" size={24} />
           <div>
-            <p className="text-indigo-100 text-sm mb-2">
-              Semester {selectedSemester} - Overall Completion
-            </p>
-            <h3 className="text-3xl font-bold">{overallProgress}%</h3>
-            <p className="text-indigo-100 text-sm mt-2">
-              {totalCompletedTopics} of {totalTopics} topics completed
-            </p>
-          </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-            <BookOpen size={48} className="opacity-80" />
-          </div>
-        </div>
-        <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg h-3 overflow-hidden">
-          <div
-            className="bg-white h-full rounded-lg transition-all duration-500"
-            style={{ width: `${overallProgress}%` }}
-          ></div>
-        </div>
-      </div>
-
-      {/* Subjects and Topics */}
-      {currentSemesterData.map((subject) => (
-        <div key={subject.id} className="space-y-4">
-          {/* Subject Header - Clickable */}
-          <button
-            onClick={() => toggleSubject(subject.id)}
-            className="w-full bg-gradient-to-r from-slate-700 to-slate-600 rounded-xl p-5 text-white hover:from-slate-800 hover:to-slate-700 transition-all shadow-md"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">
-                  {subject.name === "Mathematics" && "🔢"}
-                  {subject.name === "Science" && "🧪"}
-                  {subject.name === "English" && "📖"}
-                  {subject.name === "Social Science" && "🌍"}
-                </span>
-                <div className="text-left">
-                  <h3 className="text-xl font-bold">{subject.name}</h3>
-                  <p className="text-slate-200 text-sm mt-1">
-                    {
-                      subject.topics.filter((t) => t.status === "completed")
-                        .length
-                    }{" "}
-                    / {subject.topics.length} topics completed
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {isSubjectExpanded(subject.id) ? (
-                  <ChevronDown size={24} className="text-white" />
-                ) : (
-                  <ChevronRight size={24} className="text-white" />
-                )}
-              </div>
-            </div>
-          </button>
-
-          {/* Topics - Only show when expanded */}
-          {isSubjectExpanded(subject.id) && (
-            <div className="space-y-4 ml-2">
-              {subject.topics.map((topic) => (
-                <div
-                  key={topic.id}
-                  className={`bg-white p-6 rounded-xl border-2 ${getStatusColor(
-                    topic.status
-                  )} shadow-sm`}
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Main Content */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h4 className="text-lg font-bold">{topic.name}</h4>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            topic.status
-                          )}`}
-                        >
-                          {topic.status === "completed" ? (
-                            <span className="flex items-center gap-1">
-                              <CheckCircle size={12} />
-                              Completed
-                            </span>
-                          ) : topic.status === "in-progress" ? (
-                            <span className="flex items-center gap-1">
-                              <Clock size={12} />
-                              In Progress
-                            </span>
-                          ) : (
-                            "Pending"
-                          )}
-                        </span>
-                      </div>
-
-                      {/* Key Points */}
-                      <div className="mb-3 bg-slate-50 rounded-lg p-3">
-                        <p className="text-sm font-semibold text-slate-700 mb-2">
-                          📚 Key Learning Points:
-                        </p>
-                        <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
-                          {topic.keyPoints.map((point, idx) => (
-                            <li key={idx}>{point}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Progress Bar */}
-                      {topic.status !== "pending" && (
-                        <div className="mb-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-slate-600">
-                              Progress
-                            </span>
-                            <span className="text-xs font-medium">
-                              {topic.progress}%
-                            </span>
-                          </div>
-                          <div className="bg-slate-200 rounded-full h-2 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                topic.status === "completed"
-                                  ? "bg-green-500"
-                                  : "bg-blue-500"
-                              }`}
-                              style={{ width: `${topic.progress}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Details */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar size={16} className="text-slate-400" />
-                          <span className="text-slate-600">
-                            Scheduled: {topic.date}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <FileText size={16} className="text-slate-400" />
-                          <span className="text-slate-600">
-                            Homework: {topic.homework}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Materials */}
-                      {topic.materials.length > 0 && (
-                        <div className="mt-4">
-                          <p className="text-sm font-semibold text-slate-700 mb-2">
-                            Teaching Materials:
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {topic.materials.map((material, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                              >
-                                {getMaterialIcon(material.type)}
-                                {material.url ? (
-                                  <a
-                                    href={material.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium"
-                                  >
-                                    {material.name}
-                                  </a>
-                                ) : (
-                                  <span className="text-slate-700">
-                                    {material.name}
-                                  </span>
-                                )}
-                                {material.url && (
-                                  <a
-                                    href={material.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-indigo-600 hover:text-indigo-800"
-                                    title="Open material"
-                                  >
-                                    <LinkIcon size={14} />
-                                  </a>
-                                )}
-                                <button
-                                  onClick={() =>
-                                    handleRemoveMaterial(
-                                      subject.id,
-                                      topic.id,
-                                      idx
-                                    )
-                                  }
-                                  className="text-red-500 hover:text-red-700 ml-1"
-                                  title="Remove material"
-                                >
-                                  <X size={14} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Vertical Action Buttons */}
-                    <div className="flex flex-col gap-2">
-                      {topic.status === "pending" && (
-                        <button
-                          onClick={() =>
-                            handleMarkInProgress(subject.id, topic.id)
-                          }
-                          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
-                        >
-                          <Clock size={14} />
-                          Start
-                        </button>
-                      )}
-                      {topic.status !== "completed" && (
-                        <button
-                          onClick={() =>
-                            handleMarkCompleted(subject.id, topic.id)
-                          }
-                          className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
-                        >
-                          <CheckCircle size={14} />
-                          Complete
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleReschedule(subject.id, topic.id)}
-                        className="px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
-                      >
-                        <Calendar size={14} />
-                        Reschedule
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleOpenUploadModal(subject.id, topic.id)
-                        }
-                        className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
-                      >
-                        <Upload size={14} />
-                        Materials
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleOpenHomeworkModal(subject.id, topic.id)
-                        }
-                        className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
-                      >
-                        <FileText size={14} />
-                        Homework
-                      </button>
-                      <button
-                        onClick={() => handleShare(subject.id, topic.id)}
-                        className="px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
-                      >
-                        <Share2 size={14} />
-                        Share
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-
-      {/* Upload Materials Modal */}
-      {uploadModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold flex items-center gap-2">
-                <Upload className="text-indigo-600" size={24} />
-                Upload Teaching Materials
-              </h3>
-              <button
-                onClick={() => {
-                  setUploadModalOpen(false);
-                  setYoutubeLink("");
-                }}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {/* YouTube Link */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                  <Youtube className="text-red-600" size={20} />
-                  YouTube Video Link
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={youtubeLink}
-                    onChange={(e) => setYoutubeLink(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <button
-                    onClick={handleAddYoutubeLink}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                  >
-                    <Plus size={16} />
-                    Add
-                  </button>
-                </div>
-              </div>
-
-              {/* PDF Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                  <File className="text-red-500" size={20} />
-                  Upload PDF
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => handleFileUpload(e, "pdf")}
-                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
-                />
-              </div>
-
-              {/* PPT Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                  <Presentation className="text-orange-500" size={20} />
-                  Upload PowerPoint (PPT/PPTX)
-                </label>
-                <input
-                  type="file"
-                  accept=".ppt,.pptx"
-                  onChange={(e) => handleFileUpload(e, "ppt")}
-                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-                />
-              </div>
-
-              {/* Video Upload */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                  <Video className="text-purple-500" size={20} />
-                  Upload Video (MP4, AVI, MOV)
-                </label>
-                <input
-                  type="file"
-                  accept=".mp4,.avi,.mov,.mkv"
-                  onChange={(e) => handleFileUpload(e, "video")}
-                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setUploadModalOpen(false);
-                    setYoutubeLink("");
-                  }}
-                  className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors font-medium"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
+            <p className="font-semibold text-red-900">Error Loading Syllabus</p>
+            <p className="text-red-700 text-sm">{error}</p>
           </div>
         </div>
       )}
 
-      {/* Homework Modal */}
-      {homeworkModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold flex items-center gap-2">
-                <FileText className="text-purple-600" size={24} />
-                Set Homework
-              </h3>
-              <button
-                onClick={() => {
-                  setHomeworkModalOpen(false);
-                  setHomeworkText("");
-                }}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <X size={24} />
-              </button>
+      {/* No Data State */}
+      {!loading && !error && syllabusData.length === 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+          <AlertCircle className="text-amber-600 mx-auto mb-3" size={32} />
+          <p className="font-semibold text-amber-900">No Syllabus Assigned</p>
+          <p className="text-amber-700 text-sm mt-2">
+            You don't have any syllabus assigned yet. Please contact your
+            administrator.
+          </p>
+        </div>
+      )}
+
+      {/* Main Content */}
+      {!loading && !error && syllabusData.length > 0 && (
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">Syllabus & Lesson Plan</h2>
+              <p className="text-slate-500">
+                Track syllabus progress and manage lesson plans
+              </p>
             </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Homework Description
-                </label>
-                <textarea
-                  value={homeworkText}
-                  onChange={(e) => setHomeworkText(e.target.value)}
-                  placeholder="Enter homework details, exercises, or assignments..."
-                  rows={6}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setHomeworkModalOpen(false);
-                    setHomeworkText("");
-                  }}
-                  className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveHomework}
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-                >
-                  Save Homework
-                </button>
-              </div>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {teacherClasses.map((cls) => (
+                  <option key={cls} value={cls}>
+                    {cls}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-        </div>
+
+          {/* Semester Toggle */}
+          <div className="flex items-center justify-center gap-4 bg-white rounded-xl p-2 shadow-sm border border-slate-100 w-fit mx-auto">
+            <button
+              onClick={() => setSelectedSemester(1)}
+              className={`px-8 py-3 rounded-lg font-semibold transition-all ${
+                selectedSemester === 1
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "bg-transparent text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              📌 Semester 1
+            </button>
+            <button
+              onClick={() => setSelectedSemester(2)}
+              className={`px-8 py-3 rounded-lg font-semibold transition-all ${
+                selectedSemester === 2
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "bg-transparent text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              📌 Semester 2
+            </button>
+          </div>
+
+          {/* Overall Progress */}
+          <div className="bg-linear-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-indigo-100 text-sm mb-2">
+                  Semester {selectedSemester} - Overall Completion
+                </p>
+                <h3 className="text-3xl font-bold">{overallProgress}%</h3>
+                <p className="text-indigo-100 text-sm mt-2">
+                  {totalCompletedTopics} of {totalTopics} topics completed
+                </p>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+                <BookOpen size={48} className="opacity-80" />
+              </div>
+            </div>
+            <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-lg h-3 overflow-hidden">
+              <div
+                className="bg-white h-full rounded-lg transition-all duration-500"
+                style={{ width: `${overallProgress}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Subjects and Topics */}
+          {currentSemesterData.map((subject) => (
+            <div key={subject.id} className="space-y-4">
+              {/* Subject Header - Clickable */}
+              <button
+                onClick={() => toggleSubject(subject.id)}
+                className="w-full bg-linear-to-r from-slate-700 to-slate-600 rounded-xl p-5 text-white hover:from-slate-800 hover:to-slate-700 transition-all shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">
+                      {subject.name === "Mathematics" && "🔢"}
+                      {subject.name === "Science" && "🧪"}
+                      {subject.name === "English" && "📖"}
+                      {subject.name === "Social Science" && "🌍"}
+                    </span>
+                    <div className="text-left">
+                      <h3 className="text-xl font-bold">{subject.name}</h3>
+                      <p className="text-slate-200 text-sm mt-1">
+                        {
+                          subject.topics.filter((t) => t.status === "completed")
+                            .length
+                        }{" "}
+                        / {subject.topics.length} topics completed
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isSubjectExpanded(subject.id) ? (
+                      <ChevronDown size={24} className="text-white" />
+                    ) : (
+                      <ChevronRight size={24} className="text-white" />
+                    )}
+                  </div>
+                </div>
+              </button>
+
+              {/* Topics - Only show when expanded */}
+              {isSubjectExpanded(subject.id) && (
+                <div className="space-y-4 ml-2">
+                  {subject.topics.map((topic) => (
+                    <div
+                      key={topic.id}
+                      className={`bg-white p-6 rounded-xl border-2 ${getStatusColor(
+                        topic.status,
+                      )} shadow-sm`}
+                    >
+                      <div className="flex items-start gap-4">
+                        {/* Main Content */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="text-lg font-bold">{topic.name}</h4>
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                topic.status,
+                              )}`}
+                            >
+                              {topic.status === "completed" ? (
+                                <span className="flex items-center gap-1">
+                                  <CheckCircle size={12} />
+                                  Completed
+                                </span>
+                              ) : topic.status === "in-progress" ? (
+                                <span className="flex items-center gap-1">
+                                  <Clock size={12} />
+                                  In Progress
+                                </span>
+                              ) : (
+                                "Pending"
+                              )}
+                            </span>
+                          </div>
+
+                          {/* Key Points */}
+                          <div className="mb-3 bg-slate-50 rounded-lg p-3">
+                            <p className="text-sm font-semibold text-slate-700 mb-2">
+                              📚 Key Learning Points:
+                            </p>
+                            <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                              {topic.keyPoints.map((point, idx) => (
+                                <li key={idx}>{point}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Progress Bar */}
+                          {topic.status !== "pending" && (
+                            <div className="mb-3">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs text-slate-600">
+                                  Progress
+                                </span>
+                                <span className="text-xs font-medium">
+                                  {topic.progress}%
+                                </span>
+                              </div>
+                              <div className="bg-slate-200 rounded-full h-2 overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${
+                                    topic.status === "completed"
+                                      ? "bg-green-500"
+                                      : "bg-blue-500"
+                                  }`}
+                                  style={{ width: `${topic.progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Details */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Calendar size={16} className="text-slate-400" />
+                              <span className="text-slate-600">
+                                Scheduled: {topic.date}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <FileText size={16} className="text-slate-400" />
+                              <span className="text-slate-600">
+                                Homework: {topic.homework}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Materials */}
+                          {topic.materials.length > 0 && (
+                            <div className="mt-4">
+                              <p className="text-sm font-semibold text-slate-700 mb-2">
+                                Teaching Materials:
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {topic.materials.map((material, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                                  >
+                                    {getMaterialIcon(material.type)}
+                                    {material.url ? (
+                                      <a
+                                        href={material.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium"
+                                      >
+                                        {material.name}
+                                      </a>
+                                    ) : (
+                                      <span className="text-slate-700">
+                                        {material.name}
+                                      </span>
+                                    )}
+                                    {material.url && (
+                                      <a
+                                        href={material.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-indigo-600 hover:text-indigo-800"
+                                        title="Open material"
+                                      >
+                                        <LinkIcon size={14} />
+                                      </a>
+                                    )}
+                                    <button
+                                      onClick={() =>
+                                        handleRemoveMaterial(
+                                          subject.id,
+                                          topic.id,
+                                          idx,
+                                        )
+                                      }
+                                      className="text-red-500 hover:text-red-700 ml-1"
+                                      title="Remove material"
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Vertical Action Buttons */}
+                        <div className="flex flex-col gap-2">
+                          {topic.status === "pending" && (
+                            <button
+                              onClick={() =>
+                                handleMarkInProgress(subject.id, topic.id)
+                              }
+                              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
+                            >
+                              <Clock size={14} />
+                              Start
+                            </button>
+                          )}
+                          {topic.status !== "completed" && (
+                            <button
+                              onClick={() =>
+                                handleMarkCompleted(subject.id, topic.id)
+                              }
+                              className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
+                            >
+                              <CheckCircle size={14} />
+                              Complete
+                            </button>
+                          )}
+                          <button
+                            onClick={() =>
+                              handleReschedule(subject.id, topic.id)
+                            }
+                            className="px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
+                          >
+                            <Calendar size={14} />
+                            Reschedule
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleOpenUploadModal(subject.id, topic.id)
+                            }
+                            className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
+                          >
+                            <Upload size={14} />
+                            Materials
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleOpenHomeworkModal(subject.id, topic.id)
+                            }
+                            className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
+                          >
+                            <FileText size={14} />
+                            Homework
+                          </button>
+                          <button
+                            onClick={() => handleShare(subject.id, topic.id)}
+                            className="px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-xs font-medium flex items-center gap-1.5 whitespace-nowrap"
+                          >
+                            <Share2 size={14} />
+                            Share
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Upload Materials Modal */}
+          {uploadModalOpen && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold flex items-center gap-2">
+                    <Upload className="text-indigo-600" size={24} />
+                    Upload Teaching Materials
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setUploadModalOpen(false);
+                      setYoutubeLink("");
+                    }}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* YouTube Link */}
+                  <div>
+                    <label className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                      <Youtube className="text-red-600" size={20} />
+                      YouTube Video Link
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={youtubeLink}
+                        onChange={(e) => setYoutubeLink(e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <button
+                        onClick={handleAddYoutubeLink}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                      >
+                        <Plus size={16} />
+                        Add
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* PDF Upload */}
+                  <div>
+                    <label className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                      <File className="text-red-500" size={20} />
+                      Upload PDF
+                    </label>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => handleFileUpload(e, "pdf")}
+                      className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+                    />
+                  </div>
+
+                  {/* PPT Upload */}
+                  <div>
+                    <label className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                      <Presentation className="text-orange-500" size={20} />
+                      Upload PowerPoint (PPT/PPTX)
+                    </label>
+                    <input
+                      type="file"
+                      accept=".ppt,.pptx"
+                      onChange={(e) => handleFileUpload(e, "ppt")}
+                      className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                    />
+                  </div>
+
+                  {/* Video Upload */}
+                  <div>
+                    <label className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                      <Video className="text-purple-500" size={20} />
+                      Upload Video (MP4, AVI, MOV)
+                    </label>
+                    <input
+                      type="file"
+                      accept=".mp4,.avi,.mov,.mkv"
+                      onChange={(e) => handleFileUpload(e, "video")}
+                      className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setUploadModalOpen(false);
+                        setYoutubeLink("");
+                      }}
+                      className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors font-medium"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Homework Modal */}
+          {homeworkModalOpen && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold flex items-center gap-2">
+                    <FileText className="text-purple-600" size={24} />
+                    Set Homework
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setHomeworkModalOpen(false);
+                      setHomeworkText("");
+                    }}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Homework Description
+                    </label>
+                    <textarea
+                      value={homeworkText}
+                      onChange={(e) => setHomeworkText(e.target.value)}
+                      placeholder="Enter homework details, exercises, or assignments..."
+                      rows={6}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setHomeworkModalOpen(false);
+                        setHomeworkText("");
+                      }}
+                      className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveHomework}
+                      className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                    >
+                      Save Homework
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

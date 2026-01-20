@@ -33,6 +33,12 @@ export const ROUTES = [
     roles: [UserRole.SUPER_ADMIN],
   },
   {
+    path: "/super-admin/syllabus",
+    label: "Syllabus",
+    component: "SchoolAdminSyllabus",
+    roles: [UserRole.SUPER_ADMIN],
+  },
+  {
     path: "/super-admin/academics",
     label: "Academics",
     component: "Academics",
@@ -80,6 +86,12 @@ export const ROUTES = [
     path: "/school-admin/staff",
     label: "Staff & Teachers",
     component: "Staff",
+    roles: [UserRole.SCHOOL_ADMIN],
+  },
+  {
+    path: "/school-admin/syllabus",
+    label: "Syllabus",
+    component: "SchoolAdminSyllabus",
     roles: [UserRole.SCHOOL_ADMIN],
   },
   {

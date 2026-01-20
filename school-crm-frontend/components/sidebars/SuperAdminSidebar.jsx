@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Settings,
   LogOut,
+  BookOpen,
 } from "lucide-react";
 
 const SuperAdminSidebar = ({ activeTab, setActiveTab }) => {
@@ -27,6 +28,7 @@ const SuperAdminSidebar = ({ activeTab, setActiveTab }) => {
     { id: "/super-admin/admissions", label: "Admission CRM", icon: Target },
     { id: "/super-admin/students", label: "All Students", icon: GraduationCap },
     { id: "/super-admin/staff", label: "All Staff", icon: UserSquare2 },
+    { id: "/super-admin/syllabus", label: "Syllabus", icon: BookOpen },
     { id: "/super-admin/academics", label: "Academics", icon: Calendar },
     { id: "/super-admin/finance", label: "Finance Overview", icon: Wallet },
     {
