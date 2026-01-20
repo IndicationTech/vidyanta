@@ -22,6 +22,7 @@ const SchoolAdminSidebar = ({ activeTab, setActiveTab }) => {
       setUserName(storedName);
     }
   }, []);
+
   const menuItems = [
     {
       id: "/school-admin/dashboard",
