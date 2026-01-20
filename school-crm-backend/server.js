@@ -9,8 +9,9 @@ import profileRoutes from "./routes/profileRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
-import syllabusRoutes from "./routes/syllabusRoutes.js";
 
+import syllabusRoutes from "./routes/syllabusRoutes.js";
+import timetableRoutes from "./routes/timetableRoutes.js";
 import geminiRoutes from "./routes/gemini.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +33,11 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
+<<<<<<< Updated upstream
 app.use("/api/syllabus", syllabusRoutes);
+=======
+app.use("/api/timetables", timetableRoutes);
+>>>>>>> Stashed changes
 app.use("/uploads", express.static(path.join(__dirname, "src/uploads")));
 app.use("/api/gemini", geminiRoutes);
 
