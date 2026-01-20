@@ -33,11 +33,8 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
-<<<<<<< Updated upstream
 app.use("/api/syllabus", syllabusRoutes);
-=======
 app.use("/api/timetables", timetableRoutes);
->>>>>>> Stashed changes
 app.use("/uploads", express.static(path.join(__dirname, "src/uploads")));
 app.use("/api/gemini", geminiRoutes);
 
