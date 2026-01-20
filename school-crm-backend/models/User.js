@@ -81,6 +81,7 @@ const userSchema = new mongoose.Schema(
     qualification: String,
     experience: String,
     classAssigned: String,
+    section: String, // Sections assigned to teacher (comma-separated like "A, B, C")
     previousSchool: String,
 
     // Photos
@@ -116,14 +117,13 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true, // Adds createdAt and updatedAt
-  }
+  },
 );
 
 // Hash password before saving
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
 
-  
   const salt = await bcryptjs.genSalt(10);
   this.password = await bcryptjs.hash(this.password, salt);
 });

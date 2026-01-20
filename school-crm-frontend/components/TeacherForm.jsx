@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import {
   X,
@@ -17,65 +17,80 @@ import {
   Globe,
   Download,
   CheckCircle2,
-  CircleX 
+  CircleX,
 } from "lucide-react";
 
-const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
+const TeacherForm = ({
+  isOpen,
+  onClose,
+  onSave,
+  initialData = null,
+  mode = "add",
+}) => {
   const [entryMode, setEntryMode] = useState("manual"); // "manual" or "auto"
   const [uploadedFile, setUploadedFile] = useState(null);
   const [activeSection, setActiveSection] = useState("personal");
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState(
-    initialData || {
-      // Personal Information
-      profilePhoto: null,
-      teacherId: "TCH" + Math.floor(1000 + Math.random() * 9000),
-      firstName: "",
-      lastName: "",
-      gender: "",
-      dob: "",
-      bloodGroup: "",
-      maritalStatus: "",
-      languages: [],
-      classAssigned: "",
-      subject: "",
-      qualification: "",
-      experience: "",
-      dateOfJoining: "",
-      status: "Active",
-      phone: "",
-      email: "",
-      address: "",
-      permanentAddress: "",
-      fatherName: "",
-      motherName: "",
-      panNumber: "",
-      previousSchool: "",
-      // Payroll
-      epfNumber: "",
-      basicSalary: "",
-      contractType: "Permanent",
-      workShift: "Day",
-      workLocation: "",
-      dateOfLeaving: "",
-      // Leaves
-      medicalLeaves: 0,
-      casualLeaves: 0,
-      sickLeaves: 0,
-      maternityLeaves: 0,
-      // Bank Account
-      accountName: "",
-      accountNumber: "",
-      bankName: "",
-      ifscCode: "",
-      branchName: "",
-      // Documents
-      joiningLetter: null,
-      // Password
-      password: "",
-      confirmPassword: "",
+
+  const defaultFormData = {
+    // Personal Information
+    profilePhoto: null,
+    teacherId: "TCH" + Math.floor(1000 + Math.random() * 9000),
+    firstName: "",
+    lastName: "",
+    gender: "",
+    dob: "",
+    bloodGroup: "",
+    maritalStatus: "",
+    languages: [],
+    classAssigned: [],
+    section: [],
+    subject: [],
+    qualification: "",
+    experience: "",
+    dateOfJoining: "",
+    status: "Active",
+    phone: "",
+    email: "",
+    address: "",
+    permanentAddress: "",
+    fatherName: "",
+    motherName: "",
+    panNumber: "",
+    previousSchool: "",
+    // Payroll
+    epfNumber: "",
+    basicSalary: "",
+    contractType: "Permanent",
+    workShift: "Day",
+    workLocation: "",
+    dateOfLeaving: "",
+    // Leaves
+    medicalLeaves: 0,
+    casualLeaves: 0,
+    sickLeaves: 0,
+    maternityLeaves: 0,
+    // Bank Account
+    accountName: "",
+    accountNumber: "",
+    bankName: "",
+    ifscCode: "",
+    branchName: "",
+    // Documents
+    joiningLetter: null,
+    // Password
+    password: "",
+    confirmPassword: "",
+  };
+
+  const [formData, setFormData] = useState(initialData || defaultFormData);
+
+  // Update formData when initialData changes (for edit mode)
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
     }
-  );
+  }, [initialData]);
 
   const sections = [
     { id: "personal", label: "Personal Information", icon: User },
@@ -178,11 +193,11 @@ const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
 
           onClose();
           alert(
-            `Upload complete!\n✓ Success: ${successCount}\n✗ Failed: ${failedCount}`
+            `Upload complete!\n✓ Success: ${successCount}\n✗ Failed: ${failedCount}`,
           );
         } catch (parseError) {
           alert(
-            "Failed to parse the file. Please ensure it's a valid Excel file."
+            "Failed to parse the file. Please ensure it's a valid Excel file.",
           );
         }
       };
@@ -211,12 +226,14 @@ const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
       return;
     }
 
-    if (!formData.password) {
+    // Password is required only in add mode
+    if (mode === "add" && !formData.password) {
       alert("Password is required");
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    // Only validate password match if password is provided
+    if (formData.password && formData.password !== formData.confirmPassword) {
       alert("Password and Confirm Password must match");
       return;
     }
@@ -247,7 +264,7 @@ const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
           <div className="flex justify-between items-center mb-4">
             <div>
               <h3 className="text-xl font-bold text-slate-900">
-                {initialData ? "Edit Teacher" : "Add New Teacher"}
+                {mode === "edit" ? "Edit Teacher" : "Add New Teacher"}
               </h3>
               <p className="text-sm text-slate-500">
                 Teacher ID: {formData.teacherId}
@@ -491,9 +508,54 @@ const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
                       {
                         label: "Class Assigned",
                         name: "classAssigned",
-                        type: "text",
+                        type: "multiselect",
+                        options: [
+                          "1st",
+                          "2nd",
+                          "3rd",
+                          "4th",
+                          "5th",
+                          "6th",
+                          "7th",
+                          "8th",
+                          "9th",
+                          "10th",
+                        ],
                       },
-                      { label: "Subject", name: "subject", type: "text" },
+                      {
+                        label: "Section",
+                        name: "section",
+                        type: "multiselect",
+                        options: ["A", "B", "C", "D"],
+                      },
+                      {
+                        label: "Subject",
+                        name: "subject",
+                        type: "multiselect",
+                        options: [
+                          "English",
+                          "Hindi",
+                          "Regional Language (Marathi / Gujarati / Tamil / etc.)",
+                          "Sanskrit",
+                          "Mathematics",
+                          "Environmental Studies (EVS)",
+                          "Science",
+                          "Physics",
+                          "Chemistry",
+                          "Biology",
+                          "Social Studies",
+                          "History",
+                          "Geography",
+                          "Civics / Political Science",
+                          "Economics",
+                          "General Knowledge (GK)",
+                          "Computer / Information Technology (IT)",
+                          "Art & Craft",
+                          "Music",
+                          "Dance",
+                          "Physical Education (PT)",
+                        ],
+                      },
                       {
                         label: "Qualification",
                         name: "qualification",
@@ -555,7 +617,78 @@ const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
                             <span className="text-red-500">*</span>
                           )}
                         </label>
-                        {field.type === "select" ? (
+                        {field.type === "multiselect" ? (
+                          <div className="space-y-2">
+                            <div className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 min-h-[42px] flex flex-wrap gap-2">
+                              {(formData[field.name] || []).length > 0 ? (
+                                (formData[field.name] || []).map(
+                                  (item, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-medium"
+                                    >
+                                      {item}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const newValues = [
+                                            ...(formData[field.name] || []),
+                                          ];
+                                          newValues.splice(idx, 1);
+                                          setFormData({
+                                            ...formData,
+                                            [field.name]: newValues,
+                                          });
+                                        }}
+                                        className="hover:text-indigo-900"
+                                      >
+                                        ×
+                                      </button>
+                                    </span>
+                                  ),
+                                )
+                              ) : (
+                                <span className="text-slate-400 text-sm">
+                                  Select {field.label}
+                                </span>
+                              )}
+                            </div>
+                            <select
+                              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white"
+                              onChange={(e) => {
+                                if (
+                                  e.target.value &&
+                                  !(formData[field.name] || []).includes(
+                                    e.target.value,
+                                  )
+                                ) {
+                                  setFormData({
+                                    ...formData,
+                                    [field.name]: [
+                                      ...(formData[field.name] || []),
+                                      e.target.value,
+                                    ],
+                                  });
+                                  e.target.value = "";
+                                }
+                              }}
+                              value=""
+                            >
+                              <option value="">+ Add {field.label}</option>
+                              {field.options.map((opt) => (
+                                <option
+                                  key={opt}
+                                  value={opt}
+                                  disabled={(
+                                    formData[field.name] || []
+                                  ).includes(opt)}
+                                >
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : field.type === "select" ? (
                           <select
                             name={field.name}
                             value={formData[field.name]}
@@ -893,8 +1026,8 @@ const TeacherForm = ({ isOpen, onClose, onSave, initialData = null }) => {
                   {submitting
                     ? "Saving..."
                     : initialData
-                    ? "Update Teacher"
-                    : "Save Teacher Details"}
+                      ? "Update Teacher"
+                      : "Save Teacher Details"}
                 </button>
               </div>
             </form>

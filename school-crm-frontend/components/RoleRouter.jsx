@@ -23,6 +23,7 @@ import Students from "../pages/Students";
 import Staff from "../pages/Staff";
 import Finance from "../pages/Finance";
 import ManageSchools from "../pages/ManageSchools";
+import SchoolAdminSyllabus from "../pages/SchoolAdminSyllabus";
 import Children from "../pages/student/Children";
 import Fees from "../pages/student/Fees";
 
@@ -84,6 +85,14 @@ const RoleRouter = ({ role, currentPath, onNavigate }) => {
   }
   if (currentPath.includes("/staff")) {
     return <Staff />;
+  }
+  if (currentPath.includes("/syllabus")) {
+    if (role === UserRole.SCHOOL_ADMIN || role === UserRole.SUPER_ADMIN) {
+      return <SchoolAdminSyllabus />;
+    }
+    if (role === UserRole.TEACHER) {
+      return <SyllabusManagement />;
+    }
   }
   if (currentPath.includes("/finance") || currentPath.includes("/fees")) {
     if (role === UserRole.PARENT || role === UserRole.STUDENT) {

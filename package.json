@@ -6,7 +6,13 @@
     "client": "npm run dev --prefix school-crm-frontend",
     "server": "npm run dev --prefix school-crm-backend",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "install-all": "npm install --prefix school-crm-backend && npm install --prefix school-crm-frontend"
+    "install-all": "npm install --prefix school-crm-backend && npm install --prefix school-crm-frontend",
+    "build:client": "npm run build --prefix school-crm-frontend",
+    "build:server": "npm run build --prefix school-crm-backend",
+    "build": "npm run build:server && npm run build:client",
+    "preview:client": "npm run preview --prefix school-crm-frontend",
+    "preview:server": "npm run start --prefix school-crm-backend",
+    "preview": "concurrently \"npm run preview:server\" \"npm run preview:client\""
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

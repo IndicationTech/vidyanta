@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Building2,
+  BookOpen,
 } from "lucide-react";
 
 const SchoolAdminSidebar = ({ activeTab, setActiveTab }) => {
@@ -30,6 +31,7 @@ const SchoolAdminSidebar = ({ activeTab, setActiveTab }) => {
     { id: "/school-admin/admissions", label: "Admission CRM", icon: Target },
     { id: "/school-admin/students", label: "Students", icon: GraduationCap },
     { id: "/school-admin/staff", label: "Staff & Teachers", icon: UserSquare2 },
+    { id: "/school-admin/syllabus", label: "Syllabus", icon: BookOpen },
     { id: "/school-admin/academics", label: "Academics", icon: Calendar },
     { id: "/school-admin/finance", label: "Fees & Payroll", icon: Wallet },
     {

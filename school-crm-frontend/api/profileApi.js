@@ -16,6 +16,8 @@ export const createStaffProfile = (data) => API.post(`/profile`, data);
 
 export const getAllStaff = () => API.get(`/profile/all`);
 
+export const deleteStaff = (userId) => API.delete(`/profile/${userId}`);
+
 // PHOTO
 export const uploadPhoto = (userId, formData) =>
   API.post(`/profile/${userId}/photo`, formData, {
