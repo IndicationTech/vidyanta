@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { getProfile } from "../api/profileApi";
 import { generateTimetable } from "../services/geminiService";
 import { MOCK_TEACHERS } from "../constants";
 import TimeTableModal from "../components/TimeTableModal";
@@ -7,6 +8,7 @@ import {
   createTimetable,
   updateTimetable,
   deleteTimetable,
+  getTimetableByTeacher,
 } from "../api/timetableApi";
 import {
   Calendar,
@@ -42,6 +44,9 @@ const Academics = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [noTimetableFound, setNoTimetableFound] = useState(false);
+  const [teacherData, setTeacherData] = useState(null);
+  const [teacherTimetableLoading, setTeacherTimetableLoading] = useState(false);
+  const [teacherPeriods, setTeacherPeriods] = useState([]);
 
   const [timetableForm, setTimetableForm] = useState({
     class: "10th",
@@ -80,6 +85,96 @@ const Academics = () => {
     const role = localStorage.getItem("userRole") || "Student";
     setUserRole(role);
   }, []);
+
+  // Fetch teacher data if user is a teacher
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      if (userRole === "Teacher") {
+        try {
+          const userId = localStorage.getItem("userId");
+          if (!userId) return;
+
+          const response = await getProfile(userId);
+          setTeacherData(response.data);
+        } catch (error) {
+          console.error("Error fetching teacher profile:", error);
+          // Fallback to mock data
+          setTeacherData({
+            name: "Bhumika Sutar",
+            subjects: ["Mathematics", "Physics"],
+            classes: ["Class 10A", "Class 10B", "Class 9C"],
+          });
+        }
+      }
+    };
+
+    if (userRole === "Teacher") {
+      fetchTeacherData();
+    }
+  }, [userRole]);
+
+  // Fetch teacher's timetable periods when teacher data is loaded
+  useEffect(() => {
+    const fetchTeacherTimetable = async () => {
+      if (!teacherData?.name) return;
+
+      try {
+        setTeacherTimetableLoading(true);
+        const response = await getTimetableByTeacher(teacherData.name);
+
+        if (response.success) {
+          setTeacherPeriods(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching teacher timetable:", error);
+        // Fallback to mock data
+        setTeacherPeriods([
+          {
+            class: "10A",
+            section: "A",
+            day: "Monday",
+            subject: "Mathematics",
+            teacher: teacherData.name,
+            timeFrom: "09:00",
+            timeTo: "09:45",
+          },
+          {
+            class: "10B",
+            section: "B",
+            day: "Monday",
+            subject: "Physics",
+            teacher: teacherData.name,
+            timeFrom: "11:00",
+            timeTo: "11:45",
+          },
+          {
+            class: "9C",
+            section: "C",
+            day: "Tuesday",
+            subject: "Mathematics",
+            teacher: teacherData.name,
+            timeFrom: "14:00",
+            timeTo: "14:45",
+          },
+          {
+            class: "10A",
+            section: "A",
+            day: "Wednesday",
+            subject: "Physics",
+            teacher: teacherData.name,
+            timeFrom: "15:30",
+            timeTo: "16:15",
+          },
+        ]);
+      } finally {
+        setTeacherTimetableLoading(false);
+      }
+    };
+
+    if (teacherData) {
+      fetchTeacherTimetable();
+    }
+  }, [teacherData]);
 
   // Fetch timetable when selected class or section changes
   const fetchTimetable = useCallback(async () => {
@@ -490,8 +585,9 @@ const Academics = () => {
   const currentTimetableData = timetableDataState;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* FULL WIDTH FIXED WRAPPER */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Success Toast */}
         {saveSuccess && (
           <div className="fixed top-4 right-4 z-[9999] bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slide-in">
@@ -537,9 +633,9 @@ const Academics = () => {
         />
 
         {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 mb-1">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Academic Management
             </h2>
             <p className="text-sm text-slate-600 flex items-center gap-2">
@@ -547,7 +643,9 @@ const Academics = () => {
               Manage schedules, curriculum, and AI-powered planning
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+
+          {/* Controls */}
+          <div className="flex items-center gap-3 flex-wrap justify-start xl:justify-end w-full xl:w-auto">
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
@@ -626,59 +724,81 @@ const Academics = () => {
         </div>
 
         {/* Timetable Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden w-full max-w-full">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden w-full">
           {/* Card Header */}
-          <div className="px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
-                <Calendar size={20} className="text-white" />
+          <div className="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-purple-50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Calendar size={24} className="text-white" />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                    Weekly Schedule
+                  </h3>
+                  <p className="text-sm text-slate-600">
+                    Class <span className="font-semibold">{selectedClass}</span>{" "}
+                    • Section{" "}
+                    <span className="font-semibold">{selectedSection}</span> •{" "}
+                    <span className="text-slate-500">2025-26</span>
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">
-                  Weekly Schedule
-                </h3>
-                <p className="text-sm text-slate-600">
-                  Class {selectedClass} Section {selectedSection} - Academic
-                  Year 2025-26
-                </p>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs px-3 py-1 rounded-full bg-white border border-slate-200 text-slate-600 shadow-sm">
+                  {isAdmin ? "Admin Mode" : "View Only"}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Loading State */}
+          {/* Loading */}
           {isLoading && (
             <div className="p-12 flex flex-col items-center justify-center">
               <Loader2
                 size={48}
                 className="text-indigo-600 animate-spin mb-4"
               />
-              <p className="text-slate-600 font-medium">Loading timetable...</p>
+              <p className="text-slate-700 font-semibold">
+                Loading timetable...
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                Fetching schedule for Class {selectedClass} - {selectedSection}
+              </p>
             </div>
           )}
 
-          {/* No Timetable Found State */}
+          {/* No timetable */}
           {!isLoading && noTimetableFound && (
             <div className="p-12 flex flex-col items-center justify-center">
-              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                <Calendar size={40} className="text-slate-400" />
+              <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <Calendar size={48} className="text-slate-400" />
               </div>
-              <h4 className="text-xl font-bold text-slate-700 mb-2">
+
+              <h4 className="text-2xl font-bold text-slate-800 mb-2">
                 No Timetable Found
               </h4>
-              <p className="text-slate-500 text-center max-w-md mb-6">
-                There is no timetable configured for Class {selectedClass}{" "}
-                Section {selectedSection} yet.
+
+              <p className="text-slate-500 text-center max-w-md mb-8">
+                Timetable is not configured for{" "}
+                <span className="font-semibold text-slate-700">
+                  Class {selectedClass} • Section {selectedSection}
+                </span>
+                .
                 {isAdmin
-                  ? " Click the button below to create one."
-                  : " Please contact your administrator to set up the timetable."}
+                  ? " Create one now to start scheduling periods."
+                  : " Please contact your administrator."}
               </p>
+
               {isAdmin && (
                 <button
                   onClick={handleOpenAddTimetable}
-                  className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all flex items-center gap-2 shadow-md"
+                  className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-2xl font-semibold hover:shadow-xl hover:scale-[1.03] transition-all flex items-center gap-2 shadow-md"
                 >
                   <Plus size={20} />
-                  Create Timetable for {selectedClass} {selectedSection}
+                  Create Timetable
                 </button>
               )}
             </div>
@@ -687,125 +807,180 @@ const Academics = () => {
           {/* Timetable Grid */}
           {!isLoading && !noTimetableFound && currentTimetableData && (
             <>
-              <div className="p-3 overflow-x-auto max-w-full">
-                <div className="grid grid-cols-6 gap-2 min-w-max w-fit">
-                  {days.map((day) => (
-                    <div key={day} className="min-w-[140px]">
-                      {/* Day Header */}
-                      <div className="mb-3 pb-2 border-b border-slate-200">
-                        <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide text-center">
-                          {day}
-                        </h4>
-                      </div>
+              <div className="p-4 sm:p-6">
+                {/* Horizontal Scroll Wrapper */}
+                <div className="w-full overflow-x-auto pb-3 -mx-2 px-2">
+                  <div
+                    className="
+            grid grid-flow-col gap-4 w-max
+            auto-cols-[85%]
+            sm:auto-cols-[calc((100%-16px)/2)]
+            md:auto-cols-[calc((100%-32px)/3)]
+            xl:auto-cols-[calc((100%-48px)/4)]
+          "
+                  >
+                    {days.map((day) => (
+                      <div
+                        key={day}
+                        className="
+                rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white
+                shadow-sm overflow-hidden flex flex-col
+                h-[420px] sm:h-[460px] lg:h-[500px]
+              "
+                      >
+                        {/* Day Header */}
+                        <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between shrink-0">
+                          <h4 className="text-sm font-bold text-slate-800">
+                            {day}
+                          </h4>
 
-                      {/* Schedule Cards */}
-                      <div className="space-y-2">
-                        {currentTimetableData[day]?.length > 0 ? (
-                          currentTimetableData[day].map((slot, index) => {
-                            if (slot.subject === "BREAK") {
-                              return (
-                                <div
-                                  key={index}
-                                  className="p-2 rounded border border-amber-200 text-center bg-amber-50"
-                                >
-                                  <p className="text-xs font-medium text-amber-700">
-                                    ☕ Short Break
-                                  </p>
-                                  <p className="text-xs text-amber-600 mt-1">
-                                    {slot.time}
-                                  </p>
-                                </div>
-                              );
-                            }
+                          <span className="text-[10px] px-2 py-1 rounded-full bg-white border border-slate-200 text-slate-500">
+                            {currentTimetableData[day]?.length || 0} slots
+                          </span>
+                        </div>
 
-                            if (slot.subject === "LUNCH") {
-                              return (
-                                <div
-                                  key={index}
-                                  className="p-2 rounded border border-orange-200 text-center bg-orange-50"
-                                >
-                                  <p className="text-xs font-medium text-orange-700">
-                                    🍽️ Lunch Break
-                                  </p>
-                                  <p className="text-xs text-orange-600 mt-1">
-                                    {slot.time}
-                                  </p>
-                                </div>
-                              );
-                            }
-
-                            const style = getSubjectStyle(slot.subject);
-                            const initials = getTeacherInitials(slot.teacher);
-
-                            return (
-                              <div
-                                key={index}
-                                onClick={() =>
-                                  isAdmin && handleOpenEditTimetable()
-                                }
-                                className={`p-2 rounded border ${
-                                  style.border
-                                } ${style.bg} hover:shadow-sm transition-all ${
-                                  isAdmin ? "cursor-pointer" : "cursor-default"
-                                }`}
-                              >
-                                {/* Time */}
-                                <div className="flex items-center gap-1 mb-1">
-                                  <Clock size={12} className={style.text} />
-                                  <span className={`text-xs ${style.text}`}>
-                                    {slot.time}
-                                  </span>
-                                </div>
-
-                                {/* Subject */}
-                                <h5
-                                  className={`text-xs font-medium ${style.text} mb-1 leading-tight`}
-                                >
-                                  {slot.subject}
-                                </h5>
-
-                                {/* Teacher */}
-                                <div className="flex items-center gap-1">
-                                  {/* Avatar */}
+                        {/* Slots */}
+                        <div className="p-3 sm:p-4 space-y-2 overflow-y-auto flex-1 pr-2 thin-scrollbar">
+                          {currentTimetableData[day]?.length > 0 ? (
+                            currentTimetableData[day].map((slot, index) => {
+                              if (slot.subject === "BREAK") {
+                                return (
                                   <div
-                                    className={`w-5 h-5 rounded-full ${style.bg} border ${style.border} flex items-center justify-center shrink-0`}
+                                    key={index}
+                                    className="p-2.5 rounded-xl border border-amber-200 bg-amber-50 flex items-center justify-between"
                                   >
-                                    <span
-                                      className={`text-[9px] font-medium ${style.text}`}
-                                    >
-                                      {initials}
+                                    <div>
+                                      <p className="text-xs font-bold text-amber-800">
+                                        ☕ Break
+                                      </p>
+                                      <p className="text-[11px] text-amber-700">
+                                        {slot.time}
+                                      </p>
+                                    </div>
+                                    <span className="text-[10px] px-2 py-1 rounded-full bg-white border border-amber-200 text-amber-700">
+                                      Rest
                                     </span>
                                   </div>
-                                  <p
-                                    className={`text-xs ${style.text} opacity-80 truncate`}
+                                );
+                              }
+
+                              if (slot.subject === "LUNCH") {
+                                return (
+                                  <div
+                                    key={index}
+                                    className="p-2.5 rounded-xl border border-orange-200 bg-orange-50 flex items-center justify-between"
                                   >
-                                    {slot.teacher}
-                                  </p>
+                                    <div>
+                                      <p className="text-xs font-bold text-orange-800">
+                                        🍽️ Lunch
+                                      </p>
+                                      <p className="text-[11px] text-orange-700">
+                                        {slot.time}
+                                      </p>
+                                    </div>
+                                    <span className="text-[10px] px-2 py-1 rounded-full bg-white border border-orange-200 text-orange-700">
+                                      Break
+                                    </span>
+                                  </div>
+                                );
+                              }
+
+                              const style = getSubjectStyle(slot.subject);
+                              const initials = getTeacherInitials(slot.teacher);
+
+                              return (
+                                <div
+                                  key={index}
+                                  onClick={() =>
+                                    isAdmin && handleOpenEditTimetable()
+                                  }
+                                  className={`group p-2.5 rounded-2xl border ${style.border} ${style.bg}
+                        hover:shadow-md hover:-translate-y-[1px] transition-all duration-200
+                        ${isAdmin ? "cursor-pointer" : "cursor-default"}`}
+                                >
+                                  {/* Time */}
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <div className="flex items-center gap-2">
+                                      <Clock size={12} className={style.text} />
+                                      <span
+                                        className={`text-[11px] font-semibold ${style.text}`}
+                                      >
+                                        {slot.time}
+                                      </span>
+                                    </div>
+
+                                    <span
+                                      className={`text-[10px] px-2 py-0.5 rounded-full bg-white/70 border ${style.border} ${style.text}`}
+                                    >
+                                      Period
+                                    </span>
+                                  </div>
+
+                                  {/* Subject */}
+                                  <h5
+                                    className={`text-sm font-bold ${style.text} leading-tight`}
+                                  >
+                                    {slot.subject}
+                                  </h5>
+
+                                  {/* Teacher */}
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <div
+                                      className={`w-7 h-7 rounded-full bg-white border ${style.border} flex items-center justify-center shrink-0 shadow-sm`}
+                                    >
+                                      <span
+                                        className={`text-[10px] font-bold ${style.text}`}
+                                      >
+                                        {initials}
+                                      </span>
+                                    </div>
+
+                                    <div className="min-w-0">
+                                      <p
+                                        className={`text-[11px] ${style.text} opacity-90 truncate`}
+                                      >
+                                        {slot.teacher}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500 truncate">
+                                        Assigned Teacher
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {isAdmin && (
+                                    <p className="text-[10px] text-slate-500 mt-2 opacity-0 group-hover:opacity-100 transition">
+                                      Click to edit timetable
+                                    </p>
+                                  )}
                                 </div>
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <div className="p-3 rounded border border-slate-200 text-center bg-slate-50">
-                            <p className="text-xs text-slate-500">
-                              No periods scheduled
-                            </p>
-                          </div>
-                        )}
+                              );
+                            })
+                          ) : (
+                            <div className="p-4 rounded-xl border border-dashed border-slate-300 text-center bg-white">
+                              <p className="text-xs text-slate-500">
+                                No periods scheduled
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
+
+                <p className="text-xs text-slate-500 mt-3 text-center">
+                  👉 Scroll horizontally to view more days
+                </p>
               </div>
 
               {/* Footer Note */}
-              <div className="px-4 py-3 bg-slate-50 border-t border-slate-200">
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
                 <p className="text-xs text-slate-500 text-center">
                   💡{" "}
                   <span className="font-semibold">
                     {isAdmin
-                      ? "Admin Mode: Click 'Edit Timetable' button to configure class schedules and manage periods."
-                      : "View-Only Mode: Contact your administrator to request timetable changes."}
+                      ? "Admin Mode: Use Edit Timetable to configure subjects and teachers."
+                      : "View-Only Mode: Contact administrator for changes."}
                   </span>
                 </p>
               </div>

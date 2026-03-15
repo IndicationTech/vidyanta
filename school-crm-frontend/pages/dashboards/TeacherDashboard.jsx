@@ -15,6 +15,7 @@ import {
   JoystickIcon,
 } from "lucide-react";
 import { getProfile } from "../../api/profileApi";
+import { getTimetableByTeacher } from "../../api/timetableApi";
 const TeacherDashboard = () => {
   // Get current greeting
   const getGreeting = () => {
@@ -30,7 +31,7 @@ const TeacherDashboard = () => {
 
   // Daily notice
   const [dailyNotice, setDailyNotice] = useState(
-    "Parent-Teacher Meeting scheduled for this Friday at 3:00 PM"
+    "Parent-Teacher Meeting scheduled for this Friday at 3:00 PM",
   );
 
   // Syllabus Progress
@@ -64,37 +65,21 @@ const TeacherDashboard = () => {
   ]);
   const [showAddSchedule, setShowAddSchedule] = useState(false);
 
-  // Today's classes
-  const [todaysClasses, setTodaysClasses] = useState([
-    {
-      id: 1,
-      class: "10A",
-      subject: "Mathematics",
-      time: "9:00 AM",
-      status: "completed",
-    },
-    {
-      id: 2,
-      class: "10B",
-      subject: "Physics",
-      time: "11:00 AM",
-      status: "ongoing",
-    },
-    {
-      id: 3,
-      class: "9C",
-      subject: "Mathematics",
-      time: "2:00 PM",
-      status: "upcoming",
-    },
-    {
-      id: 4,
-      class: "10A",
-      subject: "Physics",
-      time: "3:30 PM",
-      status: "upcoming",
-    },
-  ]);
+  // Teacher's timetable periods
+  const [teacherPeriods, setTeacherPeriods] = useState([]);
+  const [timetableLoading, setTimetableLoading] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(() => {
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    return days[new Date().getDay()];
+  });
 
   // Attendance overview
   const [attendanceData, setAttendanceData] = useState({
@@ -282,6 +267,69 @@ const TeacherDashboard = () => {
     fetchTeacherProfile();
   }, []);
 
+  // Fetch teacher's timetable periods when teacher data is loaded
+  useEffect(() => {
+    const fetchTeacherTimetable = async () => {
+      if (!teacherData?.name) return;
+
+      try {
+        setTimetableLoading(true);
+        const response = await getTimetableByTeacher(teacherData.name);
+
+        if (response.success) {
+          setTeacherPeriods(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching teacher timetable:", error);
+        // Fallback to mock data if API fails
+        setTeacherPeriods([
+          {
+            class: "10A",
+            section: "A",
+            day: "Monday",
+            subject: "Mathematics",
+            teacher: teacherData.name,
+            timeFrom: "09:00",
+            timeTo: "09:45",
+          },
+          {
+            class: "10B",
+            section: "B",
+            day: "Monday",
+            subject: "Physics",
+            teacher: teacherData.name,
+            timeFrom: "11:00",
+            timeTo: "11:45",
+          },
+          {
+            class: "9C",
+            section: "C",
+            day: "Tuesday",
+            subject: "Mathematics",
+            teacher: teacherData.name,
+            timeFrom: "14:00",
+            timeTo: "14:45",
+          },
+          {
+            class: "10A",
+            section: "A",
+            day: "Wednesday",
+            subject: "Physics",
+            teacher: teacherData.name,
+            timeFrom: "15:30",
+            timeTo: "16:15",
+          },
+        ]);
+      } finally {
+        setTimetableLoading(false);
+      }
+    };
+
+    if (teacherData) {
+      fetchTeacherTimetable();
+    }
+  }, [teacherData]);
+
   // Calendar functions
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -309,7 +357,7 @@ const TeacherDashboard = () => {
       (s) =>
         s.date.getDate() === date.getDate() &&
         s.date.getMonth() === date.getMonth() &&
-        s.date.getFullYear() === date.getFullYear()
+        s.date.getFullYear() === date.getFullYear(),
     );
   };
 
@@ -341,8 +389,8 @@ const TeacherDashboard = () => {
       // Edit existing
       setAnnouncements(
         announcements.map((a) =>
-          a.id === currentAnnouncement.id ? { ...announcement, id: a.id } : a
-        )
+          a.id === currentAnnouncement.id ? { ...announcement, id: a.id } : a,
+        ),
       );
     } else {
       // Add new
@@ -372,7 +420,7 @@ const TeacherDashboard = () => {
   const totalPages = Math.ceil(filteredMarks.length / marksPerPage);
   const paginatedMarks = filteredMarks.slice(
     (marksPage - 1) * marksPerPage,
-    marksPage * marksPerPage
+    marksPage * marksPerPage,
   );
 
   if (loading) {
@@ -441,7 +489,7 @@ const TeacherDashboard = () => {
                 src={
                   teacherData.photo ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    teacherData.name || "Teacher"
+                    teacherData.name || "Teacher",
                   )}&background=4f46e5&color=fff&size=128`
                 }
                 alt={teacherData.name}
@@ -576,10 +624,10 @@ const TeacherDashboard = () => {
                     !date
                       ? "bg-transparent"
                       : isToday(date)
-                      ? "bg-indigo-600 text-white font-bold"
-                      : hasSchedule(date)
-                      ? "bg-blue-100 text-blue-800 font-semibold hover:bg-blue-200"
-                      : "hover:bg-slate-100 text-slate-700"
+                        ? "bg-indigo-600 text-white font-bold"
+                        : hasSchedule(date)
+                          ? "bg-blue-100 text-blue-800 font-semibold hover:bg-blue-200"
+                          : "hover:bg-slate-100 text-slate-700"
                   }`}
                 >
                   {date ? date.getDate() : ""}
@@ -592,36 +640,88 @@ const TeacherDashboard = () => {
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
               <Clock size={24} className="text-indigo-600" />
-              Today's Classes
+              {selectedDay ===
+              (() => {
+                const days = [
+                  "Sunday",
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                ];
+                return days[new Date().getDay()];
+              })()
+                ? "Today's Classes"
+                : `${selectedDay}'s Classes`}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {todaysClasses.map((cls) => (
-                <div
-                  key={cls.id}
-                  className={`p-4 rounded-lg border-2 transition ${
-                    cls.status === "completed"
-                      ? "border-green-200 bg-green-50 opacity-60"
-                      : cls.status === "ongoing"
-                      ? "border-indigo-500 bg-indigo-50 shadow-lg"
-                      : "border-slate-200 bg-white hover:border-indigo-300"
+
+            {/* Day Selector */}
+            <div className="flex overflow-x-auto gap-2 mb-6 pb-2">
+              {[
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+              ].map((day) => (
+                <button
+                  key={day}
+                  onClick={() => setSelectedDay(day)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    selectedDay === day
+                      ? "bg-indigo-600 text-white"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
                 >
-                  <h4 className="font-bold text-slate-800">{cls.class}</h4>
-                  <p className="text-sm text-slate-600">{cls.subject}</p>
-                  <p className="text-xs text-slate-500 mt-2">{cls.time}</p>
-                  <span
-                    className={`inline-block mt-2 px-2 py-1 text-xs rounded-full ${
-                      cls.status === "completed"
-                        ? "bg-green-200 text-green-800"
-                        : cls.status === "ongoing"
-                        ? "bg-indigo-200 text-indigo-800"
-                        : "bg-slate-200 text-slate-800"
-                    }`}
-                  >
-                    {cls.status}
-                  </span>
-                </div>
+                  {day}
+                </button>
               ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {timetableLoading ? (
+                // Loading skeletons
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="p-4 rounded-lg border-2 border-slate-200 bg-white"
+                  >
+                    <div className="h-5 bg-slate-200 rounded w-3/4 animate-pulse mb-2"></div>
+                    <div className="h-4 bg-slate-200 rounded w-1/2 animate-pulse mb-2"></div>
+                    <div className="h-3 bg-slate-200 rounded w-1/3 animate-pulse mb-2"></div>
+                    <div className="h-2 bg-slate-200 rounded w-1/4 animate-pulse"></div>
+                  </div>
+                ))
+              ) : // Filter and display teacher's assigned periods for selected day
+              teacherPeriods.filter((period) => period.day === selectedDay)
+                  .length === 0 ? (
+                <div className="col-span-full text-center py-8 text-slate-500">
+                  No classes assigned for {selectedDay}
+                </div>
+              ) : (
+                teacherPeriods
+                  .filter((period) => period.day === selectedDay)
+                  .map((period, index) => (
+                    <div
+                      key={index}
+                      className="p-4 rounded-lg border-2 border-slate-200 bg-white hover:border-indigo-300 transition"
+                    >
+                      <h4 className="font-bold text-slate-800">
+                        {period.class} {period.section}
+                      </h4>
+                      <p className="text-sm text-slate-600">{period.subject}</p>
+                      <p className="text-xs text-slate-500 mt-2">
+                        {period.day}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {period.timeFrom} - {period.timeTo}
+                      </p>
+                    </div>
+                  ))
+              )}
             </div>
           </div>
 
@@ -659,8 +759,8 @@ const TeacherDashboard = () => {
                       announcement.priority === "Urgent"
                         ? "border-red-500 bg-red-50"
                         : announcement.priority === "Important"
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-blue-500 bg-blue-50"
+                          ? "border-orange-500 bg-orange-50"
+                          : "border-blue-500 bg-blue-50"
                     }`}
                   >
                     <div className="flex justify-between items-start">
@@ -674,8 +774,8 @@ const TeacherDashboard = () => {
                               announcement.priority === "Urgent"
                                 ? "bg-red-200 text-red-800"
                                 : announcement.priority === "Important"
-                                ? "bg-orange-200 text-orange-800"
-                                : "bg-blue-200 text-blue-800"
+                                  ? "bg-orange-200 text-orange-800"
+                                  : "bg-blue-200 text-blue-800"
                             }`}
                           >
                             {announcement.priority}
@@ -829,7 +929,7 @@ const TeacherDashboard = () => {
                     >
                       {page}
                     </button>
-                  )
+                  ),
                 )}
               </div>
             )}
@@ -897,7 +997,7 @@ const TeacherDashboard = () => {
                           attendanceData.absent +
                           attendanceData.late +
                           attendanceData.halfDay)) *
-                        100
+                        100,
                     )}
                     %
                   </span>
@@ -993,8 +1093,8 @@ const TeacherDashboard = () => {
                         leave.status === "Approved"
                           ? "bg-green-100 text-green-800"
                           : leave.status === "Pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
                       }`}
                     >
                       {leave.status}
@@ -1147,7 +1247,7 @@ const AnnouncementModal = ({ announcement, onClose, onSubmit }) => {
       description: "",
       priority: "Normal",
       date: new Date(),
-    }
+    },
   );
 
   const handleSubmit = (e) => {

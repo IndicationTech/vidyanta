@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateTimetable = async (teachers, classes) => {
   const prompt = `Generate a weekly school timetable for the following classes: ${classes.join(
-    ", "
+    ", ",
   )}. 
   Available Teachers and their subjects: ${JSON.stringify(teachers)}.
   Rules: 
@@ -35,7 +35,7 @@ export const generateTimetable = async (teachers, classes) => {
 
 export const analyzePerformance = async (studentData) => {
   const prompt = `Analyze this student performance data: ${JSON.stringify(
-    studentData
+    studentData,
   )}. 
   Provide a short summary of strengths, weaknesses, and 3 actionable improvement steps.`;
 
@@ -53,7 +53,37 @@ export const analyzePerformance = async (studentData) => {
 };
 
 export const generateAnnouncement = async (topic, role) => {
-  const prompt = `Write a professional school announcement for ${role} regarding: ${topic}. Keep it concise and informative.`;
+  const prompt = `You are an AI Communication Assistant for a School CRM. Generate a fully functional school announcement draft based on the given topic.
+
+Topic: ${topic}
+Audience: ${role}
+
+Rules:
+1) Output must be clear, formal, and school-friendly.
+2) Include all required details in a structured format.
+3) If details are missing, make realistic assumptions but keep them generic.
+4) Keep it short, actionable, and easy to read.
+
+Return the announcement in this format exactly:
+
+TITLE:
+(1 short line title)
+
+MESSAGE:
+(5–10 lines, easy language, bullet points allowed)
+
+IMPORTANT DETAILS:
+- Date:
+- Time:
+- Location:
+- Applicable For:
+- Instructions:
+
+CLOSING:
+(1–2 lines)
+
+SIGNATURE:
+Principal / School Admin`;
 
   try {
     const response = await ai.models.generateContent({

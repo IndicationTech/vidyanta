@@ -245,6 +245,34 @@ export const deletePeriod = async (id, day, periodIndex) => {
 };
 
 /**
+ * Get timetable periods by teacher name
+ * @param {string} teacherName - The name of the teacher
+ */
+export const getTimetableByTeacher = async (teacherName) => {
+  try {
+    const encodedTeacherName = encodeURIComponent(teacherName);
+    const response = await fetch(
+      `${API_BASE_URL}/timetables/teacher/${encodedTeacherName}`,
+      {
+        method: "GET",
+        headers: getHeaders(),
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to fetch timetable by teacher");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching timetable by teacher:", error);
+    throw error;
+  }
+};
+
+/**
  * Get available classes list
  */
 export const getAvailableClasses = async () => {

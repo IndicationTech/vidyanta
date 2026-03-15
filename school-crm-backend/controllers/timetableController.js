@@ -496,6 +496,66 @@ export const deletePeriod = async (req, res) => {
 };
 
 /**
+ * @desc    Get timetable periods by teacher name
+ * @route   GET /api/timetables/teacher/:teacherName
+ * @access  Private
+ */
+export const getTimetableByTeacher = async (req, res) => {
+  try {
+    const { teacherName } = req.params;
+
+    // Find all timetables that have periods assigned to this teacher
+    const timetables = await Timetable.find({ isActive: true });
+
+    // Collect all periods assigned to this teacher
+    const teacherPeriods = [];
+    timetables.forEach((timetable) => {
+      const days = [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+      days.forEach((day) => {
+        const periods = timetable.schedule[day] || [];
+        periods.forEach((period) => {
+          if (
+            period.teacher &&
+            period.teacher.toLowerCase().includes(teacherName.toLowerCase())
+          ) {
+            teacherPeriods.push({
+              class: timetable.className,
+              section: timetable.section,
+              day,
+              subject: period.subject,
+              teacher: period.teacher,
+              timeFrom: period.timeFrom,
+              timeTo: period.timeTo,
+              timetableId: timetable._id,
+            });
+          }
+        });
+      });
+    });
+
+    res.status(200).json({
+      success: true,
+      count: teacherPeriods.length,
+      data: teacherPeriods,
+    });
+  } catch (error) {
+    console.error("Error fetching timetable by teacher:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch timetable by teacher",
+      error: error.message,
+    });
+  }
+};
+
+/**
  * @desc    Get list of available classes
  * @route   GET /api/timetables/classes
  * @access  Private
