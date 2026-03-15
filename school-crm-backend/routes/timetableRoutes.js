@@ -9,6 +9,7 @@ import {
   deleteTimetable,
   deletePeriod,
   getAvailableClasses,
+  getTimetableByTeacher,
 } from "../controllers/timetableController.js";
 import { protect, authorize, isAdmin } from "../middleware/auth.js";
 
@@ -26,6 +27,9 @@ router.get("/", getAllTimetables);
 
 // Get timetable by class name
 router.get("/class/:className", getTimetableByClass);
+
+// Get timetable by teacher name
+router.get("/teacher/:teacherName", getTimetableByTeacher);
 
 // Get timetable by ID
 router.get("/:id", getTimetableById);

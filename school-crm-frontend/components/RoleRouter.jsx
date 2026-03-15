@@ -26,6 +26,7 @@ import ManageSchools from "../pages/ManageSchools";
 import SchoolAdminSyllabus from "../pages/SchoolAdminSyllabus";
 import Children from "../pages/student/Children";
 import Fees from "../pages/student/Fees";
+import StudentCommunication from "../pages/student/Communication";
 
 // Import Teacher pages
 import AttendanceManagement from "../pages/teacher/AttendanceManagement";
@@ -107,6 +108,12 @@ const RoleRouter = ({ role, currentPath, onNavigate }) => {
     return <Academics />;
   }
   if (currentPath.includes("/communication")) {
+    if (role === UserRole.STUDENT) {
+      return <StudentCommunication />;
+    }
+    if (role === UserRole.PARENT) {
+      return <StudentCommunication />;
+    }
     return <Communication />;
   }
   if (currentPath.includes("/schools") && role === UserRole.SUPER_ADMIN) {

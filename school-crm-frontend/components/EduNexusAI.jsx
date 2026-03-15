@@ -42,7 +42,7 @@ const EduNexusAI = () => {
         >
           <Sparkles size={24} />
           <div className="absolute right-16 bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-lg text-slate-900 font-bold text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            Ask EduNexus AI Assistant
+            Ask Vidyanta AI Assistant
           </div>
         </button>
       </div>

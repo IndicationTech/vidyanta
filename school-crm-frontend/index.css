@@ -68,3 +68,29 @@ html {
     #475569 100%
   ); /* slate-700 to slate-600 */
 }
+
+/* Utility for very thin scrollbar with transparent track */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5); /* slate-400 with 50% opacity */
+  border-radius: 2px;
+  transition: background 0.3s ease;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.8); /* slate-400 with 80% opacity */
+}
+
+/* Firefox support for thin scrollbar */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
